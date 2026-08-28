@@ -1,0 +1,19 @@
+# Dev overlay: run the API from source with hot-reload instead of the built image.
+# Compose loads this file automatically. To use the built image instead, run with only
+# the base file:  docker compose -f docker-compose.yml up
+
+services:
+  api:
+    build: !reset null
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    working_dir: /src/api
+    entrypoint: []
+    command: ["dotnet", "watch", "run", "--project", "src/MyFrete.Api/MyFrete.Api.csproj", "--non-interactive", "--urls", "http://+:8080"]
+    volumes:
+      - ../api:/src/api
+      - nuget-cache:/root/.nuget/packages
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+
+volumes:
+  nuget-cache:

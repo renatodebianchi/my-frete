@@ -1,0 +1,544 @@
+openapi: 3.1.0
+info:
+  title: my-frete API
+  version: 1.0.0
+  description: >
+    API do MVP de mini-fretes. Todos os endpoints sob /v1. AuthN via Bearer JWT, exceto
+    cadastro e login. Escrita idempotente aceita o header `Idempotency-Key`.
+servers:
+  - url: https://api.my-frete.example/v1
+    description: produção
+  - url: http://localhost:8080/v1
+    description: desenvolvimento
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Accounts
+  - name: Professionals
+  - name: Requests
+  - name: Matching
+  - name: Scheduling
+  - name: Trips
+  - name: Privacy
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Cria conta (cliente e/ou profissional)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { description: criado, content: { application/json: { schema: { $ref: '#/components/schemas/AuthTokens' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Autentica e retorna tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/AuthTokens' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Rotaciona o refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties: { refreshToken: { type: string } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/AuthTokens' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /accounts/me:
+    get:
+      tags: [Accounts]
+      summary: Dados da conta autenticada
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Me' } } } }
+
+  /accounts/me/devices:
+    post:
+      tags: [Accounts]
+      summary: Registra token de push do dispositivo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform, token]
+              properties:
+                platform: { type: string, enum: [ios, android] }
+                token: { type: string }
+      responses:
+        '204': { description: registrado }
+
+  /professionals/me:
+    patch:
+      tags: [Professionals]
+      summary: Atualiza carga máxima e disponibilidade imediata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxLoadKg: { type: number, minimum: 0.1 }
+                immediateAvailability: { type: boolean }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/ProfessionalProfile' } } } }
+        '409':
+          description: não pode ficar disponível com transporte ativo
+          content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  /professionals/me/location:
+    patch:
+      tags: [Professionals]
+      summary: Atualiza a localização atual (enquanto disponível)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng]
+              properties:
+                lat: { type: number, minimum: -90, maximum: 90 }
+                lng: { type: number, minimum: -180, maximum: 180 }
+      responses:
+        '204': { description: registrada }
+
+  /professionals/me/schedule-availability:
+    get:
+      tags: [Professionals]
+      summary: Datas em que o profissional está disponível para agendamento
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { type: array, items: { type: string, format: date } }
+    put:
+      tags: [Professionals]
+      summary: Substitui a lista de datas disponíveis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string, format: date } }
+      responses:
+        '204': { description: atualizado }
+
+  /pricing/estimate:
+    post:
+      tags: [Requests]
+      summary: Estimativa de preço sem criar requisição (FR-008/010)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EstimateRequest' }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/PriceEstimate' } } } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /requests:
+    post:
+      tags: [Requests]
+      summary: Cria e confirma uma requisição imediata (FR-006, inicia matching)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRequest' }
+      responses:
+        '201': { description: criada, content: { application/json: { schema: { $ref: '#/components/schemas/TransportRequest' } } } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [Requests]
+      summary: Histórico de requisições do cliente autenticado (FR-029)
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/TransportRequestPage' } } } }
+
+  /requests/{id}:
+    get:
+      tags: [Requests]
+      summary: Detalhe e status atual da requisição (FR-017)
+      parameters: [ { $ref: '#/components/parameters/RequestId' } ]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/TransportRequest' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /requests/{id}/cancel:
+    post:
+      tags: [Requests]
+      summary: Cliente cancela a requisição (FR-026)
+      parameters: [ { $ref: '#/components/parameters/RequestId' } ]
+      responses:
+        '200': { description: cancelada, content: { application/json: { schema: { $ref: '#/components/schemas/TransportRequest' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /requests/{id}/schedule-decision:
+    post:
+      tags: [Scheduling]
+      summary: Resposta do cliente à oferta de agendamento (FR-018/019/023)
+      parameters: [ { $ref: '#/components/parameters/RequestId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [schedule, decline] }
+                scheduledDate: { type: string, format: date, description: obrigatório se decision=schedule }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/TransportRequest' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /offers/inbox:
+    get:
+      tags: [Matching]
+      summary: Oferta pendente para o profissional autenticado (imediata ou de agendamento)
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Offer' } }
+
+  /offers/{id}/accept:
+    post:
+      tags: [Matching]
+      summary: Profissional aceita a oferta (FR-014/015/016/022)
+      parameters: [ { $ref: '#/components/parameters/OfferId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses:
+        '200': { description: aceita, content: { application/json: { schema: { $ref: '#/components/schemas/Trip' } } } }
+        '409':
+          description: janela expirada, já preenchida por outro, ou profissional inelegível
+          content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  /offers/{id}/decline:
+    post:
+      tags: [Matching]
+      summary: Profissional recusa a oferta (passa ao próximo)
+      parameters: [ { $ref: '#/components/parameters/OfferId' } ]
+      responses:
+        '204': { description: recusada }
+
+  /trips/{id}:
+    get:
+      tags: [Trips]
+      summary: Detalhe do transporte
+      parameters: [ { $ref: '#/components/parameters/TripId' } ]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Trip' } } } }
+
+  /trips/{id}/agreed-amount:
+    patch:
+      tags: [Trips]
+      summary: Ajusta o valor combinado antes da conclusão (FR-025)
+      parameters: [ { $ref: '#/components/parameters/TripId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties: { amount: { type: number, minimum: 0 } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Trip' } } } }
+
+  /trips/{id}/deliver:
+    post:
+      tags: [Trips]
+      summary: Profissional marca o transporte como entregue (FR-025b)
+      parameters: [ { $ref: '#/components/parameters/TripId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses:
+        '200': { description: entregue, content: { application/json: { schema: { $ref: '#/components/schemas/Trip' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /trips/{id}/client-response:
+    post:
+      tags: [Trips]
+      summary: Cliente confirma ou contesta a entrega (FR-025c)
+      parameters: [ { $ref: '#/components/parameters/TripId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [response]
+              properties:
+                response: { type: string, enum: [confirm, dispute] }
+                note: { type: string }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Trip' } } } }
+
+  /trips/{id}/cancel:
+    post:
+      tags: [Trips]
+      summary: Cliente ou profissional cancela antes do início (FR-027)
+      parameters: [ { $ref: '#/components/parameters/TripId' } ]
+      responses:
+        '200': { description: cancelado, content: { application/json: { schema: { $ref: '#/components/schemas/Trip' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /trips:
+    get:
+      tags: [Trips]
+      summary: Histórico de transportes do profissional autenticado (FR-029)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/TripPage' } } } }
+
+  /privacy/data-subject-requests:
+    post:
+      tags: [Privacy]
+      summary: Solicita acesso, correção ou exclusão dos próprios dados (FR-030)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind]
+              properties:
+                kind: { type: string, enum: [access, rectification, deletion] }
+                details: { type: string }
+      responses:
+        '202': { description: registrada }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    RequestId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    OfferId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    TripId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, maxLength: 128 }
+
+  responses:
+    Unauthorized: { description: não autenticado, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    NotFound: { description: não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    Conflict: { description: conflito de estado, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    ValidationError: { description: entrada inválida, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+
+  schemas:
+    Problem:
+      description: RFC 9457 problem details
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors: { type: object, additionalProperties: { type: array, items: { type: string } } }
+
+    RegisterRequest:
+      type: object
+      required: [name, email, phone, password, roles]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, description: E.164 }
+        password: { type: string, minLength: 8 }
+        roles: { type: array, items: { type: string, enum: [client, professional] }, minItems: 1 }
+        maxLoadKg: { type: number, description: obrigatório se roles inclui professional }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    AuthTokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresInSeconds: { type: integer }
+
+    Me:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        roles: { type: array, items: { type: string } }
+        professional: { $ref: '#/components/schemas/ProfessionalProfile' }
+
+    ProfessionalProfile:
+      type: object
+      properties:
+        maxLoadKg: { type: number }
+        immediateAvailability: { type: boolean }
+        verificationStatus: { type: string, enum: [nao_verificado, em_analise, verificado, rejeitado] }
+        lastLocationAt: { type: string, format: date-time, nullable: true }
+
+    GeoPoint:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+
+    Address:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string }
+        point: { $ref: '#/components/schemas/GeoPoint' }
+
+    EstimateRequest:
+      type: object
+      required: [origin, destination, estimatedWeightKg]
+      properties:
+        origin: { $ref: '#/components/schemas/Address' }
+        destination: { $ref: '#/components/schemas/Address' }
+        estimatedWeightKg: { type: number, minimum: 0.1 }
+
+    PriceEstimate:
+      type: object
+      properties:
+        amount: { type: number }
+        currency: { type: string, example: BRL }
+        distanceKm: { type: number }
+        distanceSource: { type: string, enum: [routed, geodesic_fallback] }
+        isEstimate: { type: boolean, example: true }
+
+    CreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/EstimateRequest'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                required: [description]
+                properties:
+                  description: { type: string }
+                  quantity: { type: integer, minimum: 1, default: 1 }
+
+    TransportRequest:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [draft, searching, hired, awaiting_schedule_decision, scheduled_searching, scheduled, completed, unfulfilled, cancelled]
+          description: >
+            status consolidado da requisição; `completed` é atingido quando o Trip chega a
+            `entregue` (uma contestação posterior fica em Trip.status = contestada) — ver
+            data-model.md
+        tripStatus:
+          type: string
+          enum: [contratada, em_andamento, entregue, confirmada, contestada, cancelada]
+          nullable: true
+          description: status do Trip quando já houver vínculo
+        kind: { type: string, enum: [immediate, scheduled] }
+        scheduledDate: { type: string, format: date, nullable: true }
+        estimate: { $ref: '#/components/schemas/PriceEstimate' }
+        items: { type: array, items: { type: object } }
+        originAddress: { type: string }
+        destinationAddress: { type: string }
+        assignedProfessional:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            verificationStatus: { type: string }
+        tripId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    TransportRequestPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/TransportRequest' } }
+        page: { type: integer }
+        total: { type: integer }
+
+    Offer:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        requestId: { type: string, format: uuid }
+        type: { type: string, enum: [immediate, scheduled] }
+        respondBy: { type: string, format: date-time, nullable: true }
+        scheduledDate: { type: string, format: date, nullable: true }
+        summary:
+          type: object
+          properties:
+            originAddress: { type: string }
+            destinationAddress: { type: string }
+            distanceKm: { type: number }
+            estimatedWeightKg: { type: number }
+            estimatedAmount: { type: number }
+
+    Trip:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        requestId: { type: string, format: uuid }
+        status: { type: string, enum: [contratada, em_andamento, entregue, confirmada, contestada, cancelada] }
+        agreedAmount: { type: number }
+        currency: { type: string, example: BRL }
+        deliveredAt: { type: string, format: date-time, nullable: true }
+        clientResponse: { type: string, enum: [confirmada, contestada], nullable: true }
+        paymentSettledOutsideApp: { type: boolean }
+        counterparty:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            phone: { type: string, description: revelado só após vínculo (FR-031) }
+
+    TripPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Trip' } }
+        page: { type: integer }
+        total: { type: integer }

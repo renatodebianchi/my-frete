@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "my-frete",
+    "slug": "my-frete",
+    "scheme": "myfrete",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.myfrete.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "O my-frete usa sua localização para oferecer fretes próximos.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "O my-frete usa sua localização em segundo plano enquanto você está disponível para fretes."
+      }
+    },
+    "android": {
+      "package": "com.myfrete.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "POST_NOTIFICATIONS"]
+    },
+    "plugins": [
+      "expo-dev-client",
+      "expo-secure-store",
+      ["expo-location", { "locationAlwaysAndWhenInUsePermission": "O my-frete usa sua localização enquanto você está disponível para fretes." }],
+      ["react-native-maps", {}]
+    ],
+    "extra": {
+      "apiBaseUrl": "http://localhost:8080/v1"
+    }
+  }
+}

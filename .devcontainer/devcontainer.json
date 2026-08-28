@@ -1,0 +1,14 @@
+{
+  "name": "my-frete backend",
+  "dockerComposeFile": ["../deploy/docker-compose.yml", "../deploy/docker-compose.override.yml"],
+  "service": "api",
+  "workspaceFolder": "/src/api",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [8080, 5432, 6379, 4317],
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csdevkit", "ms-azuretools.vscode-docker"]
+    }
+  },
+  "postCreateCommand": "dotnet restore MyFrete.sln"
+}
