@@ -59,16 +59,22 @@ OK, contêiner sobe como não-root com `/ready` `healthy`, `docker compose confi
 
 **⚠️ CRITICAL**: Nenhuma user story começa antes desta fase terminar.
 
-**Status (2026-08-28)**: T010–T022 + T025 ✅ concluídas e verificadas ponta a ponta via
-`docker compose up`. Restam apenas T023 e T024 (app shell mobile).
+**Status (2026-08-28)**: ✅ **Phase 2 COMPLETA** — T010–T025. Checkpoint de fundação atingido;
+as user stories (US4 → US3 → US1 → US2) podem começar.
 
-Verificado e2e: migração aplicada no boot; `/ready` Healthy; `POST /v1/auth/register`
-(cria user + client/professional profile) → 201; `login` → 200; `GET /v1/accounts/me` (JWT)
-→ 200 com roles + selo de verificação; `refresh` rotaciona (reuso do antigo → 401); e-mail
-duplicado → 409; corpo inválido → 422 com `errors`; `Idempotency-Key` repetido → replay
-(`Idempotent-Replayed: true`); `POST /v1/accounts/me/devices` (JWT) → 204; OutboxDispatcher
-faz polling sem erros; logs JSON com `traceId`/`correlationId`. `dotnet build` + `dotnet test`
-(8 testes) + `dotnet format` verdes.
+API verificada e2e via `docker compose up`: migração aplicada no boot; `/ready` Healthy;
+`POST /v1/auth/register` (cria user + client/professional profile) → 201; `login` → 200;
+`GET /v1/accounts/me` (JWT) → 200 com roles + selo de verificação; `refresh` rotaciona (reuso
+do antigo → 401); e-mail duplicado → 409; corpo inválido → 422 com `errors`; `Idempotency-Key`
+repetido → replay (`Idempotent-Replayed: true`); `POST /v1/accounts/me/devices` (JWT) → 204;
+OutboxDispatcher faz polling sem erros; logs JSON com `traceId`/`correlationId`.
+`dotnet build` + `dotnet test` (8) + `dotnet format` verdes.
+
+Mobile (T023/T024): app shell com RootNavigator (splash → AuthStack → AppStack role-aware),
+tokens de tema, cliente HTTP com `x-correlation-id` + refresh-and-retry único em 401, secure
+store de token (`expo-secure-store`), store de auth (`zustand`), ErrorBoundary, telas
+Welcome/Login/Register + Client/Pro home, registro de push (`expo-notifications` →
+`POST /accounts/me/devices`). `npm run typecheck` + `lint` + `test` (4) verdes.
 
 - [X] T010 EF Core + Npgsql + NetTopologySuite em `api/src/MyFrete.Migrations` (`AppDbContext`, snake_case, migração `Initial_Infra`: `configuration`, `audit_event`, `idempotency_key`, `outbox`) + `AddPersistence`/`MigrateAsync` no host. **Docker-first**: `RunMigrationsOnStartup=true` aplica migrações no boot do contêiner; `dotnet-ef` como tool local só para gerar migrações.
 - [X] T011 [P] `Result`/`Error`/`ErrorType` em `api/src/MyFrete.BuildingBlocks/Results/` + mapeamento para ProblemDetails RFC 9457 (`AddProblemDetailsHandling`, `Error.ToProblem()`, `Result.Match`) em `api/src/MyFrete.Api/Infrastructure/` + `UseExceptionHandler`/`UseStatusCodePages`
@@ -84,8 +90,8 @@ faz polling sem erros; logs JSON com `traceId`/`correlationId`. `dotnet build` +
 - [X] T020 [P] Implementar o pipeline MediatR (validação FluentValidation, logging, transação/UoW) em `api/src/MyFrete.BuildingBlocks/Behaviors/`
 - [X] T021 [P] Implementar o esqueleto do módulo Notifications: entidade `DeviceToken`, `INotificationSender` (implementação Expo Push), consumer do outbox, `POST /accounts/me/devices` em `api/src/Modules/Notifications/`
 - [X] T022 [P] Implementar endpoints `/health` e `/ready` (checando Postgres e Redis) em `api/src/MyFrete.Api/Health/`; `HEALTHCHECK` no `Dockerfile.api` e no serviço `api` do Compose apontando para `/ready` (Docker-first §VIII)
-- [ ] T023 [P] Implementar o app shell mobile: navigation stacks (`auth`/`client`/`pro`), tokens de tema + config nativewind, cliente HTTP com interceptor de refresh, armazenamento seguro de token, error boundary em `mobile/src/`
-- [ ] T024 [P] Implementar registro de push + fluxo de permissão (`expo-notifications`) e header `x-correlation-id` no cliente HTTP em `mobile/src/services/`
+- [X] T023 [P] Implementar o app shell mobile: navigation stacks (`auth`/`client`/`pro`), tokens de tema + config nativewind, cliente HTTP com interceptor de refresh, armazenamento seguro de token, error boundary em `mobile/src/`
+- [X] T024 [P] Implementar registro de push + fluxo de permissão (`expo-notifications`) e header `x-correlation-id` no cliente HTTP em `mobile/src/services/`
 - [X] T025 [P] Implementar conexão Redis + helpers (locks, chaves com TTL, keyspace notifications) em `api/src/MyFrete.BuildingBlocks/Redis/`
 
 **Checkpoint**: Fundação pronta — user stories podem começar.
