@@ -36,7 +36,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.Property(x => x.DedupeKey).HasMaxLength(400);
             e.Property(x => x.LastError).HasMaxLength(2000);
             e.HasIndex(x => x.DedupeKey).IsUnique().HasFilter("dedupe_key IS NOT NULL");
-            e.HasIndex(x => new { x.State, x.CreatedAt });
+            e.HasIndex(x => new { x.State, x.NextAttemptAt });
         });
 
         b.Entity<AuditEvent>(e =>
@@ -67,6 +67,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.Property(x => x.Key).HasMaxLength(100);
             e.Property(x => x.Value).HasMaxLength(2000);
         });
+
+        // Module-owned tables (each module configures its own entities).
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Accounts.AccountsModule).Assembly);
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Notifications.NotificationsModule).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

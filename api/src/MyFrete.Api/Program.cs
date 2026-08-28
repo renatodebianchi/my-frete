@@ -1,14 +1,17 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
+using MyFrete.Api.Auth;
 using MyFrete.Api.Cli;
 using MyFrete.Api.Infrastructure;
 using MyFrete.Api.Middleware;
 using MyFrete.Api.Observability;
-using MyFrete.BuildingBlocks.Redis;
+using MyFrete.BuildingBlocks;
+using MyFrete.BuildingBlocks.Audit;
 using MyFrete.Migrations;
+using MyFrete.Modules.Accounts;
+using MyFrete.Modules.Notifications;
 using Serilog;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,18 +21,20 @@ builder.AddTelemetry();
 
 var postgres = builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required.");
-var redisConnString = builder.Configuration.GetConnectionString("Redis")
+var redis = builder.Configuration.GetConnectionString("Redis")
     ?? throw new InvalidOperationException("ConnectionStrings:Redis is required.");
 
-builder.Services.AddPersistence(postgres);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-    ConnectionMultiplexer.Connect(redisConnString));
-builder.Services.AddSingleton<IRedisConnection, RedisConnection>();
+builder.Services.AddPersistence(postgres);
+builder.Services.AddBuildingBlocks(redis, typeof(AccountsModule).Assembly, typeof(NotificationsModule).Assembly);
+builder.Services.AddAccountsModule(builder.Configuration);
+builder.Services.AddNotificationsModule(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(postgres, name: "postgres", tags: ["ready"])
-    .AddRedis(redisConnString, name: "redis", tags: ["ready"]);
+    .AddRedis(redis, name: "redis", tags: ["ready"]);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -53,7 +58,6 @@ builder.Services.AddProblemDetailsHandling();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CLI: `dotnet MyFrete.Api.dll seed --demo`
 if (args is ["seed", ..])
 {
     using var seedApp = builder.Build();
@@ -74,6 +78,9 @@ app.UseSerilogRequestLogging();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<IdempotencyMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -81,12 +88,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapHealthChecks("/health", new() { Predicate = _ => false });
-app.MapHealthChecks("/ready", new()
-{
-    Predicate = check => check.Tags.Contains("ready"),
-});
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 app.MapGet("/v1/ping", () => Results.Ok(new { pong = true }));
+app.MapAccountsEndpoints();
+app.MapNotificationsEndpoints();
 
 app.Run();
 

@@ -16,6 +16,7 @@ public static class ProblemDetailsExtensions
                 ctx.ProblemDetails.Extensions["correlationId"] = s;
             }
         });
+        services.AddExceptionHandler<ValidationExceptionHandler>();
     }
 
     public static (int Status, string Title) ToHttp(this ErrorType type) => type switch

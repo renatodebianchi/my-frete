@@ -41,7 +41,7 @@ public sealed record EventEnvelope(
             : throw new InvalidOperationException(
                 $"Event {@event.GetType().Name} is missing [EventType(\"...\")].");
 
-        var data = JsonSerializer.SerializeToElement(@event, @event.GetType());
+        var data = JsonSerializer.SerializeToElement(@event, @event.GetType(), MyFreteJson.Options);
 
         return new EventEnvelope(
             Guid.NewGuid(),

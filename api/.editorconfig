@@ -17,6 +17,8 @@ dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA2007.severity = none
 # Single-language (C#) codebase: cross-language keyword-collision rule is not relevant
 dotnet_diagnostic.CA1716.severity = none
+# Parameter-name-must-match-base: noisy for MediatR handlers, no runtime effect
+dotnet_diagnostic.CA1725.severity = none
 
 [*.{json,yml,yaml,csproj,props,targets}]
 indent_size = 2

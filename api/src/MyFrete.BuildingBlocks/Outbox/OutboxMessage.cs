@@ -36,5 +36,7 @@ public sealed class OutboxMessage
 
     public DateTimeOffset CreatedAt { get; init; }
 
+    public DateTimeOffset? NextAttemptAt { get; set; }
+
     public DateTimeOffset? SentAt { get; set; }
 }
