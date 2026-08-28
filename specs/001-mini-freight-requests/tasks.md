@@ -59,23 +59,29 @@ OK, contêiner sobe como não-root com `/ready` `healthy`, `docker compose confi
 
 **⚠️ CRITICAL**: Nenhuma user story começa antes desta fase terminar.
 
-- [ ] T010 Configurar EF Core + Npgsql + NetTopologySuite em `api/src/MyFrete.Migrations` e no host; migração inicial criando as tabelas `configuration`, `audit_event`, `idempotency_key`, `notification_outbox` ([data-model.md](data-model.md) §Cross-cutting). **Docker-first**: as migrações rodam contra o Postgres do Compose e são aplicadas na inicialização do contêiner da API (entrypoint `migrate` ou job `db-migrate` no Compose), não por instalação local.
-- [ ] T011 [P] Implementar `Result`/`Error` + mapeamento para ProblemDetails (RFC 9457) em `api/src/MyFrete.BuildingBlocks/Results/`
+**Status (2026-08-28)**: T010, T011, T016, T017, T022, T025 ✅ concluídas e verificadas
+ponta a ponta — `docker compose up` sobe o stack, a API aplica a migração `Initial_Infra` no
+boot, as 4 tabelas de infra são criadas com PostGIS, `/ready` fica `Healthy` (checa Postgres +
+Redis), headers de segurança + `x-correlation-id` OK. Restam: T012, T013/T013a, T014, T015,
+T018, T019, T020, T021, T023, T024.
+
+- [X] T010 EF Core + Npgsql + NetTopologySuite em `api/src/MyFrete.Migrations` (`AppDbContext`, snake_case, migração `Initial_Infra`: `configuration`, `audit_event`, `idempotency_key`, `outbox`) + `AddPersistence`/`MigrateAsync` no host. **Docker-first**: `RunMigrationsOnStartup=true` aplica migrações no boot do contêiner; `dotnet-ef` como tool local só para gerar migrações.
+- [X] T011 [P] `Result`/`Error`/`ErrorType` em `api/src/MyFrete.BuildingBlocks/Results/` + mapeamento para ProblemDetails RFC 9457 (`AddProblemDetailsHandling`, `Error.ToProblem()`, `Result.Match`) em `api/src/MyFrete.Api/Infrastructure/` + `UseExceptionHandler`/`UseStatusCodePages`
 - [ ] T012 [P] Implementar middleware + store de `Idempotency-Key` em `api/src/MyFrete.BuildingBlocks/Idempotency/`
 - [ ] T013 [P] Implementar o Outbox transacional (writer + dispatcher `IHostedService`) em `api/src/MyFrete.BuildingBlocks/Outbox/`, com envelope de evento versionado de [contracts/events.md](contracts/events.md)
 - [ ] T013a [P] Teste de contrato do envelope de evento (campos `id`, `type`, `occurredAt`, `correlationId`, `aggregateType`, `aggregateId`) e do versionamento de `type` conforme [contracts/events.md](contracts/events.md) em `api/tests/contract/Events/EnvelopeContractTests.cs` — Constituição §IV
 - [ ] T014 [P] Implementar `IAuditLog` + writer append-only de `AuditEvent` em `api/src/MyFrete.BuildingBlocks/Audit/`
 - [ ] T015 [P] Implementar o provedor tipado de configuração lido da tabela `configuration` em `api/src/MyFrete.BuildingBlocks/Configuration/` (offer_ttl, max_search_duration, max_professionals_contacted, schedule_decision_timeout, scheduling_window_days, max_schedules_per_date, delivery_verification_hours, location_ttl, immediate_offer_radius, sinuosity_factor, pricing) — [data-model.md](data-model.md) §Config
-- [ ] T016 [P] Configurar OpenTelemetry (traces/metrics/logs, OTLP) + Serilog JSON + propagação de `x-correlation-id` em `api/src/MyFrete.Api/Observability/`
-- [ ] T017 [P] Configurar rate limiting (por IP e por usuário) e security headers em `api/src/MyFrete.Api/Middleware/`
+- [X] T016 [P] Configurar OpenTelemetry (traces/metrics/logs, OTLP) + Serilog JSON + propagação de `x-correlation-id` em `api/src/MyFrete.Api/Observability/`
+- [X] T017 [P] Configurar rate limiting (por IP e por usuário) e security headers em `api/src/MyFrete.Api/Middleware/`
 - [ ] T018 Implementar o núcleo de identidade do módulo Accounts: entidade `User` + roles, ASP.NET Core Identity, JWT access + refresh com rotação, endpoints `/auth/register`, `/auth/login`, `/auth/refresh` em `api/src/Modules/Accounts/` (contrato em [contracts/openapi.yaml](contracts/openapi.yaml))
 - [ ] T019 [P] Implementar políticas de AuthZ (roles `client`/`professional`, propriedade do recurso) em `api/src/MyFrete.Api/Auth/`
 - [ ] T020 [P] Implementar o pipeline MediatR (validação FluentValidation, logging, transação/UoW) em `api/src/MyFrete.BuildingBlocks/Behaviors/`
 - [ ] T021 [P] Implementar o esqueleto do módulo Notifications: entidade `DeviceToken`, `INotificationSender` (implementação Expo Push), consumer do outbox, `POST /accounts/me/devices` em `api/src/Modules/Notifications/`
-- [ ] T022 [P] Implementar endpoints `/health` e `/ready` (checando Postgres e Redis) em `api/src/MyFrete.Api/Health/`; `HEALTHCHECK` no `Dockerfile.api` e no serviço `api` do Compose apontando para `/ready` (Docker-first §VIII)
+- [X] T022 [P] Implementar endpoints `/health` e `/ready` (checando Postgres e Redis) em `api/src/MyFrete.Api/Health/`; `HEALTHCHECK` no `Dockerfile.api` e no serviço `api` do Compose apontando para `/ready` (Docker-first §VIII)
 - [ ] T023 [P] Implementar o app shell mobile: navigation stacks (`auth`/`client`/`pro`), tokens de tema + config nativewind, cliente HTTP com interceptor de refresh, armazenamento seguro de token, error boundary em `mobile/src/`
 - [ ] T024 [P] Implementar registro de push + fluxo de permissão (`expo-notifications`) e header `x-correlation-id` no cliente HTTP em `mobile/src/services/`
-- [ ] T025 [P] Implementar conexão Redis + helpers (locks, chaves com TTL, keyspace notifications) em `api/src/MyFrete.BuildingBlocks/Redis/`
+- [X] T025 [P] Implementar conexão Redis + helpers (locks, chaves com TTL, keyspace notifications) em `api/src/MyFrete.BuildingBlocks/Redis/`
 
 **Checkpoint**: Fundação pronta — user stories podem começar.
 

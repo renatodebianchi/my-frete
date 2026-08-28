@@ -1,26 +1,79 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.RateLimiting;
+using MyFrete.Api.Cli;
+using MyFrete.Api.Infrastructure;
+using MyFrete.Api.Middleware;
+using MyFrete.Api.Observability;
+using MyFrete.BuildingBlocks.Redis;
+using MyFrete.Migrations;
 using Serilog;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Logging (structured JSON; full OTel wiring in Phase 2 / T016) ---
-builder.Host.UseSerilog((ctx, cfg) => cfg
-    .ReadFrom.Configuration(ctx.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console(new Serilog.Formatting.Compact.CompactJsonFormatter()));
+builder.WebHost.ConfigureKestrel(k => k.AddServerHeader = false);
+builder.ConfigureSerilog();
+builder.AddTelemetry();
 
+var postgres = builder.Configuration.GetConnectionString("Postgres")
+    ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required.");
+var redisConnString = builder.Configuration.GetConnectionString("Redis")
+    ?? throw new InvalidOperationException("ConnectionStrings:Redis is required.");
+
+builder.Services.AddPersistence(postgres);
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(redisConnString));
+builder.Services.AddSingleton<IRedisConnection, RedisConnection>();
+
+builder.Services.AddHealthChecks()
+    .AddNpgSql(postgres, name: "postgres", tags: ["ready"])
+    .AddRedis(redisConnString, name: "redis", tags: ["ready"]);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+    {
+        var key = http.User.Identity?.IsAuthenticated == true
+            ? $"user:{http.User.Identity!.Name}"
+            : $"ip:{http.Connection.RemoteIpAddress}";
+
+        return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        });
+    });
+});
+
+builder.Services.AddProblemDetailsHandling();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CLI entrypoint for `dotnet run -- seed --demo` (scaffold; real logic in T009 follow-up).
-if (args.Length > 0 && args[0] == "seed")
+// CLI: `dotnet MyFrete.Api.dll seed --demo`
+if (args is ["seed", ..])
 {
-    Console.WriteLine("[seed] scaffold — pricing rule + service area seeding lands with T009/T015.");
-    return;
+    using var seedApp = builder.Build();
+    return await SeedCommand.RunAsync(args, seedApp.Services, CancellationToken.None);
 }
 
 var app = builder.Build();
 
+if (app.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
+{
+    Log.Information("Applying database migrations on startup");
+    await app.Services.MigrateAsync();
+}
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
@@ -28,11 +81,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Health/readiness placeholders — real checks (Postgres + Redis) in Phase 2 / T022.
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-app.MapGet("/ready", () => Results.Ok(new { status = "ok" }));
+app.MapHealthChecks("/health", new() { Predicate = _ => false });
+app.MapHealthChecks("/ready", new()
+{
+    Predicate = check => check.Tags.Contains("ready"),
+});
 app.MapGet("/v1/ping", () => Results.Ok(new { pong = true }));
 
 app.Run();
+
+return 0;
 
 public partial class Program;
