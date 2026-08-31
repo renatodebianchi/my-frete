@@ -21,7 +21,8 @@ export function RegisterScreen() {
   const validate = (): string | null => {
     if (form.name.trim().length < 2) return 'Informe seu nome completo.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'Informe um e-mail válido.';
-    if (form.phone.trim().replace(/\D/g, '').length < 10) return 'Informe um telefone válido com DDD.';
+    if (form.phone.trim().replace(/\D/g, '').length < 10)
+      return 'Informe um telefone válido com DDD.';
     if (form.password.length < 8) return 'A senha precisa ter ao menos 8 caracteres.';
     if (roles.includes('professional') && !(Number(form.maxLoadKg) > 0))
       return 'Informe a carga máxima (kg) para o perfil de profissional.';

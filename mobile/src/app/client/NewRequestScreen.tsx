@@ -13,7 +13,9 @@ import type { ClientStackScreenProps } from '../navigation';
 
 function PinHint({ status }: { status: AddressPinStatus }) {
   if (status === 'locating') {
-    return <Text className="mb-3 -mt-2 text-xs text-neutral-400">Localizando endereço no mapa…</Text>;
+    return (
+      <Text className="mb-3 -mt-2 text-xs text-neutral-400">Localizando endereço no mapa…</Text>
+    );
   }
   if (status === 'found') {
     return <Text className="mb-3 -mt-2 text-xs text-brand">Endereço marcado no mapa abaixo.</Text>;
