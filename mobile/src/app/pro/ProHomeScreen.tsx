@@ -75,6 +75,7 @@ export function ProHomeScreen({ navigation }: ProStackScreenProps<'ProHome'>) {
 
         <View className="mt-4 gap-3">
           <Button title="Ofertas" variant="ghost" onPress={() => navigation.navigate('IncomingOffer')} />
+          <Button title="Minha agenda" variant="ghost" onPress={() => navigation.navigate('Schedule')} />
           <Button title="Meus transportes" variant="ghost" onPress={() => navigation.navigate('History')} />
         </View>
       </View>

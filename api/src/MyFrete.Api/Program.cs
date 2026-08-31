@@ -14,6 +14,7 @@ using MyFrete.Modules.Matching;
 using MyFrete.Modules.Notifications;
 using MyFrete.Modules.Pricing;
 using MyFrete.Modules.Requests;
+using MyFrete.Modules.Scheduling;
 using MyFrete.Modules.Trips;
 using Serilog;
 
@@ -39,18 +40,21 @@ builder.Services.AddBuildingBlocks(
     typeof(PricingModule).Assembly,
     typeof(RequestsModule).Assembly,
     typeof(TripsModule).Assembly,
-    typeof(MatchingModule).Assembly);
+    typeof(MatchingModule).Assembly,
+    typeof(SchedulingModule).Assembly);
 builder.Services.AddAccountsModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddPricingModule();
 builder.Services.AddRequestsModule();
 builder.Services.AddTripsModule();
 builder.Services.AddMatchingModule();
+builder.Services.AddSchedulingModule();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(postgres, name: "postgres", tags: ["ready"])
     .AddRedis(redis, name: "redis", tags: ["ready"]);
 
+var permitPerMinute = builder.Configuration.GetValue("RateLimiting:PermitPerMinute", 120);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -62,7 +66,7 @@ builder.Services.AddRateLimiter(options =>
 
         return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 120,
+            PermitLimit = permitPerMinute,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
         });
@@ -112,6 +116,7 @@ app.MapPricingEndpoints();
 app.MapRequestsEndpoints();
 app.MapMatchingEndpoints();
 app.MapTripsEndpoints();
+app.MapSchedulingEndpoints();
 
 app.Run();
 

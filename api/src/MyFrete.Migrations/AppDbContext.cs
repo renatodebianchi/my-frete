@@ -75,6 +75,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Requests.RequestsModule).Assembly);
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Trips.TripsModule).Assembly);
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Matching.MatchingModule).Assembly);
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Scheduling.SchedulingModule).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

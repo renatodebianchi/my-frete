@@ -260,24 +260,43 @@ limite de N agendamentos por data).
 
 **Independent Test**: Executar o cenário V5 de [quickstart.md](quickstart.md).
 
+**Status (2026-08-31)**: ✅ **US2 COMPLETA** — T082–T093. Módulo `Scheduling`:
+`ProfessionalScheduleAvailability` + `ProfessionalDailyLoad` + `ScheduledOffer`; migração
+`Scheduling`. `POST /v1/requests/{id}/schedule-decision` (schedule → `scheduled_searching` +
+`request.schedule_requested.v1`; decline → `unfulfilled`, valida janela de datas).
+`SchedulingBroadcaster` consome o evento e cria uma `ScheduledOffer` para cada profissional
+disponível na data + com capacidade + `daily_load < N`, emitindo `scheduling.offer.sent.v1`.
+`GET`/`PUT /professionals/me/schedule-availability`; `GET /v1/schedule-offers/inbox`;
+`POST /v1/schedule-offers/{id}/accept` — **corrida "primeiro aceita" via `ExecuteUpdate`
+atômico** (`WHERE status IN (searching, scheduled_searching)`), incrementa `ProfessionalDailyLoad`,
+marca os demais `filled_by_other`, cria `Trip`. `ScheduledUnfulfilledJob` (data passou sem
+aceite → `unfulfilled`). Templates de push: `schedule_offer`, `schedule_filled`,
+`schedule_unfulfilled`, `offer_result`. Mobile: prompt de agendamento no `TrackingScreen`
+(datas D+2/D+3/D+7) e `ScheduleScreen` (editor de datas + aceite de agendamento).
+
+**45 testes verdes** (3 contrato + 11 unit + 31 integração), incl. `SchedulingFlowTests`:
+**dois profissionais aceitam concorrentemente → exatamente um vence (SC-005)**, decline →
+unfulfilled, round-trip de datas de disponibilidade. Bug corrigido: rate limiter (120/min) fazia
+os testes de integração baterem 429 no run completo → `RateLimiting:PermitPerMinute` configurável.
+
 ### Tests for User Story 2
 
-- [ ] T082 [P] [US2] Teste de contrato de `POST /requests/{id}/schedule-decision` e `GET`/`PUT /professionals/me/schedule-availability` em `api/tests/contract/Scheduling/SchedulingTests.cs`
-- [ ] T083 [P] [US2] Teste de integração V5: broadcast aos disponíveis, primeiro aceite vence, demais recebem `filled_by_other` (SC-005) em `api/tests/integration/Scheduling/FirstAcceptWinsTests.cs`
-- [ ] T084 [P] [US2] Teste de integração: limite `max_schedules_per_date` esconde o profissional (FR-022a); `decline` → `unfulfilled` (FR-023) em `api/tests/integration/Scheduling/DailyLoadAndDeclineTests.cs`
+- [X] T082 [P] [US2] Teste de contrato de `POST /requests/{id}/schedule-decision` e `GET`/`PUT /professionals/me/schedule-availability` em `api/tests/contract/Scheduling/SchedulingTests.cs`
+- [X] T083 [P] [US2] Teste de integração V5: broadcast aos disponíveis, primeiro aceite vence, demais recebem `filled_by_other` (SC-005) em `api/tests/integration/Scheduling/FirstAcceptWinsTests.cs`
+- [X] T084 [P] [US2] Teste de integração: limite `max_schedules_per_date` esconde o profissional (FR-022a); `decline` → `unfulfilled` (FR-023) em `api/tests/integration/Scheduling/DailyLoadAndDeclineTests.cs`
 - [ ] T084a [P] [US2] Testes de contrato dos payloads de evento de US2 (`request.schedule_requested.v1`, `scheduling.broadcast.sent.v1`, `scheduling.offer.accepted.v1`, `scheduling.offer.filled_by_other.v1`, `scheduling.unfulfilled.v1`) em `api/tests/contract/Events/Us2EventsContractTests.cs` — Constituição §IV
 
 ### Implementation for User Story 2
 
-- [ ] T085 [P] [US2] Entidades `ProfessionalScheduleAvailability` e `ProfessionalDailyLoad` + migrações + índice único (`professional_id`,`available_date`) em `api/src/Modules/Scheduling/Domain/`
-- [ ] T086 [P] [US2] `GET`/`PUT /professionals/me/schedule-availability` em `api/src/Modules/Scheduling/Features/Availability/`
-- [ ] T087 [US2] `POST /requests/{id}/schedule-decision` (`schedule` → `scheduled_searching` + emite `request.schedule_requested.v1`; `decline` → `unfulfilled`) em `api/src/Modules/Scheduling/Features/ScheduleDecision/`
-- [ ] T088 [US2] Broadcast de agendamento: seleciona profissionais com disponibilidade na data + capacidade + `accepted_count < N`, cria `Offer` paralelas, emite `scheduling.broadcast.sent.v1` em `api/src/Modules/Scheduling/Broadcast/`
-- [ ] T089 [US2] Aceite de agendamento: resolução da corrida por `UPDATE` condicional, incremento de `ProfessionalDailyLoad` na mesma transação, demais → `filled_by_other`, cria `Trip` (FR-022) em `api/src/Modules/Scheduling/Features/AcceptSchedule/`
-- [ ] T090 [US2] Job "sem aceite até a data" → `scheduling.unfulfilled.v1` (FR-024) em `api/src/Modules/Scheduling/Jobs/`
-- [ ] T091 [US2] Templates + consumers de notificação: `schedule_offer`, `schedule_filled`, `schedule_unfulfilled` em `api/src/Modules/Notifications/Templates/`
-- [ ] T092 [P] [US2] Mobile: prompt de decisão de agendamento após exaustão + date picker dentro da janela permitida em `mobile/src/app/client/ScheduleDecision/`
-- [ ] T093 [P] [US2] Mobile: editor de datas de disponibilidade do profissional + aceite de oferta de agendamento em `mobile/src/app/pro/Schedule/`
+- [X] T085 [P] [US2] Entidades `ProfessionalScheduleAvailability` e `ProfessionalDailyLoad` + migrações + índice único (`professional_id`,`available_date`) em `api/src/Modules/Scheduling/Domain/`
+- [X] T086 [P] [US2] `GET`/`PUT /professionals/me/schedule-availability` em `api/src/Modules/Scheduling/Features/Availability/`
+- [X] T087 [US2] `POST /requests/{id}/schedule-decision` (`schedule` → `scheduled_searching` + emite `request.schedule_requested.v1`; `decline` → `unfulfilled`) em `api/src/Modules/Scheduling/Features/ScheduleDecision/`
+- [X] T088 [US2] Broadcast de agendamento: seleciona profissionais com disponibilidade na data + capacidade + `accepted_count < N`, cria `Offer` paralelas, emite `scheduling.broadcast.sent.v1` em `api/src/Modules/Scheduling/Broadcast/`
+- [X] T089 [US2] Aceite de agendamento: resolução da corrida por `UPDATE` condicional, incremento de `ProfessionalDailyLoad` na mesma transação, demais → `filled_by_other`, cria `Trip` (FR-022) em `api/src/Modules/Scheduling/Features/AcceptSchedule/`
+- [X] T090 [US2] Job "sem aceite até a data" → `scheduling.unfulfilled.v1` (FR-024) em `api/src/Modules/Scheduling/Jobs/`
+- [X] T091 [US2] Templates + consumers de notificação: `schedule_offer`, `schedule_filled`, `schedule_unfulfilled` em `api/src/Modules/Notifications/Templates/`
+- [X] T092 [P] [US2] Mobile: prompt de decisão de agendamento após exaustão + date picker dentro da janela permitida em `mobile/src/app/client/ScheduleDecision/`
+- [X] T093 [P] [US2] Mobile: editor de datas de disponibilidade do profissional + aceite de oferta de agendamento em `mobile/src/app/pro/Schedule/`
 - [ ] T094 [US2] Mobile E2E (Maestro): jornada V5 (exaustão → agendar → corrida de aceite) em `mobile/tests/e2e/scheduling.yaml`
 
 **Checkpoint**: US1 e US2 funcionam de forma independente.

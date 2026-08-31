@@ -26,6 +26,12 @@ public interface IProfessionalDirectory
 {
     Task<IReadOnlyList<Guid>> GetEligibleForImmediateAsync(int weightGrams, CancellationToken ct = default);
 
+    /// <summary>Of the given professionals, which have max load >= weight (used by scheduling).</summary>
+    Task<IReadOnlySet<Guid>> WithCapacityAsync(
+        IReadOnlyCollection<Guid> professionalIds,
+        int weightGrams,
+        CancellationToken ct = default);
+
     Task<IReadOnlyList<EligibleProfessional>> GetEligibleOrderedByProximityAsync(
         int weightGrams,
         double originLat,
@@ -87,6 +93,24 @@ public sealed class ProfessionalDirectory(DbContext db, IActiveTripGuard activeT
             .ThenBy(r => r.Distance ?? double.MaxValue)  // then nearest
             .Select(r => new EligibleProfessional(r.UserId, r.Distance, r.Stale))
             .ToList();
+    }
+
+    public async Task<IReadOnlySet<Guid>> WithCapacityAsync(
+        IReadOnlyCollection<Guid> professionalIds,
+        int weightGrams,
+        CancellationToken ct = default)
+    {
+        if (professionalIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var ok = await db.Set<ProfessionalProfile>()
+            .Where(p => professionalIds.Contains(p.UserId) && p.MaxLoadGrams >= weightGrams)
+            .Select(p => p.UserId)
+            .ToListAsync(ct);
+
+        return ok.ToHashSet();
     }
 
     private async Task<IReadOnlyList<Guid>> ExcludeBusyAsync(List<Guid> candidates, CancellationToken ct)

@@ -28,8 +28,13 @@ public sealed record RequestCancelled(Guid AggregateId, string By) : IIntegratio
 }
 
 [EventType("request.schedule_requested.v1")]
-public sealed record RequestScheduleRequested(Guid AggregateId, DateOnly ScheduledDate, int WeightGrams)
-    : IIntegrationEvent
+public sealed record RequestScheduleRequested(
+    Guid AggregateId,
+    Guid ClientId,
+    DateOnly ScheduledDate,
+    int WeightGrams,
+    decimal EstimatedPrice,
+    string Currency) : IIntegrationEvent
 {
     public string AggregateType => "TransportRequest";
 }
@@ -45,4 +50,7 @@ public interface IRequestAssignment
 
     /// <summary>A professional cancelled after accepting — put the request back into the search (FR-027).</summary>
     Task ReopenAsync(Guid requestId, CancellationToken ct = default);
+
+    /// <summary>No professional accepted the scheduled request by its date (FR-024).</summary>
+    Task MarkUnfulfilledScheduledAsync(Guid requestId, CancellationToken ct = default);
 }

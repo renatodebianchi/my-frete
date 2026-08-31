@@ -39,6 +39,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Otlp:Endpoint", string.Empty);
         builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-0123456789abcdef");
         builder.UseSetting("AppConfig:CacheSeconds", "0");
+        builder.UseSetting("RateLimiting:PermitPerMinute", "100000");
     }
 
     public async Task InitializeAsync()

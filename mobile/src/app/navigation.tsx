@@ -13,6 +13,7 @@ import { NewRequestScreen } from './client/NewRequestScreen';
 import { TrackingScreen } from './client/TrackingScreen';
 import { ProHomeScreen } from './pro/ProHomeScreen';
 import { IncomingOfferScreen } from './pro/IncomingOfferScreen';
+import { ScheduleScreen } from './pro/ScheduleScreen';
 import { HistoryScreen } from './shared/HistoryScreen';
 import { TripScreen } from './shared/TripScreen';
 
@@ -24,6 +25,7 @@ export type AppStackParamList = {
   NewRequest: undefined;
   Tracking: { requestId: string };
   IncomingOffer: undefined;
+  Schedule: undefined;
   Trip: { tripId: string };
   History: undefined;
 };
@@ -83,6 +85,7 @@ function AppNavigator() {
       <AppStack.Screen name="NewRequest" component={NewRequestScreen} options={{ title: 'Nova requisição' }} />
       <AppStack.Screen name="Tracking" component={TrackingScreen} options={{ title: 'Acompanhamento' }} />
       <AppStack.Screen name="IncomingOffer" component={IncomingOfferScreen} options={{ title: 'Oferta' }} />
+      <AppStack.Screen name="Schedule" component={ScheduleScreen} options={{ title: 'Agenda' }} />
       <AppStack.Screen name="Trip" component={TripScreen} options={{ title: 'Transporte' }} />
       <AppStack.Screen name="History" component={HistoryScreen} options={{ title: 'Histórico' }} />
     </AppStack.Navigator>

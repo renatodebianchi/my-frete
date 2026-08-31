@@ -92,6 +92,21 @@ export const freightApi = {
     apiFetch<{ tripId: string; requestId: string }>(`/offers/${id}/accept`, { method: 'POST' }),
   declineOffer: (id: string) => apiFetch<void>(`/offers/${id}/decline`, { method: 'POST' }),
 
+  scheduleDecision: (id: string, decision: 'schedule' | 'decline', scheduledDate?: string) =>
+    apiFetch<TransportRequest>(`/requests/${id}/schedule-decision`, {
+      method: 'POST',
+      body: JSON.stringify({ decision, scheduledDate }),
+    }),
+
+  getAvailability: () => apiFetch<string[]>('/professionals/me/schedule-availability'),
+  setAvailability: (dates: string[]) =>
+    apiFetch<void>('/professionals/me/schedule-availability', { method: 'PUT', body: JSON.stringify(dates) }),
+
+  scheduleOffersInbox: () =>
+    apiFetch<{ id: string; requestId: string; scheduledDate: string; weightKg: number }[]>('/schedule-offers/inbox'),
+  acceptScheduleOffer: (id: string) =>
+    apiFetch<{ tripId: string; requestId: string }>(`/schedule-offers/${id}/accept`, { method: 'POST' }),
+
   getTrip: (id: string) => apiFetch<Trip>(`/trips/${id}`),
   listTrips: () => apiFetch<{ items: Trip[] }>('/trips'),
   setAgreedAmount: (id: string, amount: number) =>

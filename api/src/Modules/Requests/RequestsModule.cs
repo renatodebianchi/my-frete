@@ -55,6 +55,12 @@ public static class RequestsModule
             return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblem();
         });
 
+        group.MapPost("/{id:guid}/schedule-decision", async (Guid id, ScheduleDecisionBody body, ISender sender) =>
+        {
+            var result = await sender.Send(new ScheduleDecisionCommand(id, body.Decision, body.ScheduledDate));
+            return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblem();
+        });
+
         return app;
     }
 
@@ -85,3 +91,5 @@ public sealed record CreateRequestBody(
     decimal EstimatedWeightKg,
     AddressBody Origin,
     AddressBody Destination);
+
+public sealed record ScheduleDecisionBody(string Decision, DateOnly? ScheduledDate);

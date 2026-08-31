@@ -1,10 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Button, Heading, Muted, Screen } from '@/components/ui';
 import { freightApi } from '@/services/api/freight';
 
 import type { ClientStackScreenProps } from '../navigation';
+
+function futureDate(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 const LABELS: Record<string, string> = {
   searching: 'Procurando um profissional…',
@@ -52,7 +58,32 @@ export function TrackingScreen({ navigation, route }: ClientStackScreenProps<'Tr
 
         {data?.status === 'awaiting_schedule_decision' && (
           <View className="mt-6">
-            <Muted>O agendamento chega na próxima versão (US2).</Muted>
+            <Text className="mb-2 font-medium text-neutral-900">Deseja agendar para outro dia?</Text>
+            <View className="gap-2">
+              {[2, 3, 7].map((d) => (
+                <Button
+                  key={d}
+                  title={`Agendar para ${futureDate(d)}`}
+                  variant="ghost"
+                  onPress={async () => {
+                    await freightApi.scheduleDecision(requestId, 'schedule', futureDate(d));
+                    await refetch();
+                  }}
+                />
+              ))}
+              <Button
+                title="Não agendar"
+                onPress={async () => {
+                  await freightApi.scheduleDecision(requestId, 'decline');
+                  await refetch();
+                }}
+              />
+            </View>
+          </View>
+        )}
+        {data?.status === 'scheduled_searching' && (
+          <View className="mt-6">
+            <Muted>Procurando um profissional para a data escolhida…</Muted>
           </View>
         )}
         {trip && (
