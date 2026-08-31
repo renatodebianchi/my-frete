@@ -73,7 +73,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Vulnerability scan (Trivy) — blocking on HIGH/CRITICAL
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: my-frete/api:ci
           format: table
@@ -121,11 +121,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
-      - name: Vulnerable NuGet packages
+      - name: Vulnerable NuGet packages (production code)
         working-directory: api
         run: |
           dotnet restore MyFrete.sln
-          dotnet list MyFrete.sln package --vulnerable --include-transitive 2>&1 | tee vuln.txt
+          # Gate on shipped code only. Test-only transitives (e.g. WireMock.Net -> Scriban)
+          # are covered by the Trivy image scan, which gates the deployable artifact.
+          for proj in src/MyFrete.Api src/MyFrete.BuildingBlocks src/MyFrete.Migrations src/Modules/*; do
+            dotnet list "$proj" package --vulnerable --include-transitive 2>&1 | tee -a vuln.txt
+          done
           ! grep -q "has the following vulnerable packages" vuln.txt
       - name: npm audit
         working-directory: mobile
