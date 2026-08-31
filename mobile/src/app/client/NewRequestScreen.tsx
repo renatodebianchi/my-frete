@@ -5,10 +5,28 @@ import { ScrollView, Text, View } from 'react-native';
 
 import { Button, ErrorText, Field, Heading, Muted, Screen } from '@/components/ui';
 import { MapPicker } from '@/components/MapPicker';
+import { useAddressPin, type AddressPinStatus } from '@/features/requests/useAddressPin';
 import { ApiError } from '@/services/api/client';
 import { freightApi, type LatLng, type PriceEstimate } from '@/services/api/freight';
 
 import type { ClientStackScreenProps } from '../navigation';
+
+function PinHint({ status }: { status: AddressPinStatus }) {
+  if (status === 'locating') {
+    return <Text className="mb-3 -mt-2 text-xs text-neutral-400">Localizando endereço no mapa…</Text>;
+  }
+  if (status === 'found') {
+    return <Text className="mb-3 -mt-2 text-xs text-brand">Endereço marcado no mapa abaixo.</Text>;
+  }
+  if (status === 'notFound') {
+    return (
+      <Text className="mb-3 -mt-2 text-xs text-amber-600">
+        Endereço não encontrado — toque no mapa para marcar.
+      </Text>
+    );
+  }
+  return null;
+}
 
 export function NewRequestScreen({ navigation }: ClientStackScreenProps<'NewRequest'>) {
   const [itemText, setItemText] = useState('');
@@ -19,6 +37,15 @@ export function NewRequestScreen({ navigation }: ClientStackScreenProps<'NewRequ
   const [dest, setDest] = useState<LatLng | null>(null);
   const [estimate, setEstimate] = useState<PriceEstimate | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const originStatus = useAddressPin(originText, (point) => {
+    setOrigin(point);
+    setEstimate(null);
+  });
+  const destStatus = useAddressPin(destText, (point) => {
+    setDest(point);
+    setEstimate(null);
+  });
 
   const ready = itemText && Number(weight) > 0 && originText && origin && destText && dest;
 
@@ -62,9 +89,21 @@ export function NewRequestScreen({ navigation }: ClientStackScreenProps<'NewRequ
               setEstimate(null);
             }}
           />
-          <Field label="Endereço de origem" value={originText} onChangeText={setOriginText} />
+          <Field
+            label="Endereço de origem"
+            placeholder="Rua, número, cidade"
+            value={originText}
+            onChangeText={setOriginText}
+          />
+          <PinHint status={originStatus} />
           <MapPicker label="Origem no mapa" value={origin} onChange={setOrigin} />
-          <Field label="Endereço de destino" value={destText} onChangeText={setDestText} />
+          <Field
+            label="Endereço de destino"
+            placeholder="Rua, número, cidade"
+            value={destText}
+            onChangeText={setDestText}
+          />
+          <PinHint status={destStatus} />
           <MapPicker label="Destino no mapa" value={dest} onChange={setDest} />
 
           <ErrorText>{error}</ErrorText>
