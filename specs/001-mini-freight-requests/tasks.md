@@ -105,20 +105,28 @@ Welcome/Login/Register + Client/Pro home, registro de push (`expo-notifications`
 **Independent Test**: Concluir o cadastro de cliente e verificar que, autenticado, o usuário
 consegue abrir o fluxo de requisição; um visitante não autenticado é bloqueado.
 
+**Status (2026-08-31)**: ✅ **US4 COMPLETA** — T026–T032b. Infra de teste de integração criada
+(`ApiFactory` com Testcontainers PostGIS + Redis, migração no boot). **18 testes verdes**
+(3 contrato + 5 unit + 10 integração). Verificado e2e via `docker compose up`: `POST /v1/requests`
+anônimo → 401, cliente autenticado → 501 (passou do gate, corpo na US1), profissional-só → 403;
+`POST /v1/privacy/data-subject-requests` → 202 (emite `datasubject.request_created.v1` — outbox
+→ dispatcher marcou `Sent` — + `AuditEvent`); `GET /v1/privacy/me/export` retorna só os dados
+do titular. Migração `Privacy` aplicada. Módulo `Requests` criado com o gate de auth (`client`).
+
 ### Tests for User Story 4
 
-- [ ] T026 [P] [US4] Teste de contrato de `/auth/register` (cliente) e `GET /accounts/me` em `api/tests/contract/Accounts/ClientRegistrationTests.cs`
-- [ ] T027 [P] [US4] Teste de integração: criação de requisição bloqueada para não autenticado (FR-003) em `api/tests/integration/Accounts/AuthGateTests.cs`
+- [X] T026 [P] [US4] Teste de contrato de `/auth/register` (cliente) e `GET /accounts/me` em `api/tests/contract/Accounts/ClientRegistrationTests.cs`
+- [X] T027 [P] [US4] Teste de integração: criação de requisição bloqueada para não autenticado (FR-003) em `api/tests/integration/Accounts/AuthGateTests.cs`
 
 ### Implementation for User Story 4
 
-- [ ] T028 [P] [US4] Entidade `ClientProfile` + migração em `api/src/Modules/Accounts/Domain/`
-- [ ] T029 [US4] Handler de cadastro de cliente (cria `User` role `client` + `ClientProfile`) em `api/src/Modules/Accounts/Features/RegisterClient/`
-- [ ] T030 [US4] Aplicar política de autenticação obrigatória nas rotas de `Requests` (401 para anônimo) em `api/src/Modules/Requests/`
-- [ ] T031 [P] [US4] Mobile: telas de onboarding, cadastro e login de cliente em `mobile/src/app/auth/`
-- [ ] T032 [P] [US4] Mobile: estado de auth (`zustand`) + sessão persistida + logout em `mobile/src/features/auth/`
-- [ ] T032a [P] [US4] Entidade `DataSubjectRequest` + migração + `POST /v1/privacy/data-subject-requests` (registra pedido, emite `datasubject.request_created.v1`, grava `AuditEvent`) — FR-030 / Constituição §III em `api/src/Modules/Accounts/Features/Privacy/`
-- [ ] T032b [P] [US4] Endpoint de export dos próprios dados (pedido `access`) retornando o pacote do titular (contas, requisições, transportes) em `api/src/Modules/Accounts/Features/Privacy/`
+- [X] T028 [P] [US4] Entidade `ClientProfile` + migração em `api/src/Modules/Accounts/Domain/`
+- [X] T029 [US4] Handler de cadastro de cliente (cria `User` role `client` + `ClientProfile`) em `api/src/Modules/Accounts/Features/RegisterClient/`
+- [X] T030 [US4] Aplicar política de autenticação obrigatória nas rotas de `Requests` (401 para anônimo) em `api/src/Modules/Requests/`
+- [X] T031 [P] [US4] Mobile: telas de onboarding, cadastro e login de cliente em `mobile/src/app/auth/`
+- [X] T032 [P] [US4] Mobile: estado de auth (`zustand`) + sessão persistida + logout em `mobile/src/features/auth/`
+- [X] T032a [P] [US4] Entidade `DataSubjectRequest` + migração + `POST /v1/privacy/data-subject-requests` (registra pedido, emite `datasubject.request_created.v1`, grava `AuditEvent`) — FR-030 / Constituição §III em `api/src/Modules/Accounts/Features/Privacy/`
+- [X] T032b [P] [US4] Endpoint de export dos próprios dados (pedido `access`) retornando o pacote do titular (contas, requisições, transportes) em `api/src/Modules/Accounts/Features/Privacy/`
 
 **Checkpoint**: Cadastro/login de cliente funcionando de ponta a ponta.
 

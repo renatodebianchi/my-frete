@@ -86,6 +86,20 @@ public static class AccountsModule
             return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblemResult();
         }).RequireAuthorization();
 
+        v1.MapPost("/privacy/data-subject-requests", async (DataSubjectRequestBody body, ISender sender) =>
+        {
+            var result = await sender.Send(new CreateDataSubjectRequestCommand(body.Kind, body.Details));
+            return result.IsSuccess
+                ? Results.Accepted($"/v1/privacy/data-subject-requests/{result.Value}")
+                : result.Error.ToProblemResult();
+        }).RequireAuthorization();
+
+        v1.MapGet("/privacy/me/export", async (ISender sender) =>
+        {
+            var result = await sender.Send(new ExportMyDataQuery());
+            return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblemResult();
+        }).RequireAuthorization();
+
         return app;
     }
 
@@ -132,3 +146,5 @@ public sealed record RegisterRequest(
 public sealed record LoginRequest(string Email, string Password);
 
 public sealed record RefreshRequest(string RefreshToken);
+
+public sealed record DataSubjectRequestBody(string Kind, string? Details);

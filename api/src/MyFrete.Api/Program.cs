@@ -11,6 +11,7 @@ using MyFrete.BuildingBlocks.Audit;
 using MyFrete.Migrations;
 using MyFrete.Modules.Accounts;
 using MyFrete.Modules.Notifications;
+using MyFrete.Modules.Requests;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,6 +94,7 @@ app.MapHealthChecks("/ready", new HealthCheckOptions { Predicate = c => c.Tags.C
 app.MapGet("/v1/ping", () => Results.Ok(new { pong = true }));
 app.MapAccountsEndpoints();
 app.MapNotificationsEndpoints();
+app.MapRequestsEndpoints();
 
 app.Run();
 
