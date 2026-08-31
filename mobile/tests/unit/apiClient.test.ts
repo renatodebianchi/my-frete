@@ -69,4 +69,29 @@ describe('apiFetch', () => {
     });
     expect(ApiError).toBeDefined();
   });
+
+  it('flattens a 422 validation errors map into the message and fieldErrors', async () => {
+    configureApiClient({
+      getTokens: () => null,
+      onTokensRefreshed: jest.fn(),
+      onSessionExpired: jest.fn(),
+    });
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          title: 'Validation failed',
+          code: 'validation_error',
+          errors: { Password: ['The length of \'Password\' must be at least 8 characters.'] },
+        }),
+        { status: 422 },
+      ),
+    );
+
+    await expect(apiFetch('/auth/register', { auth: false })).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 422,
+      message: "The length of 'Password' must be at least 8 characters.",
+      fieldErrors: { Password: ["The length of 'Password' must be at least 8 characters."] },
+    });
+  });
 });
