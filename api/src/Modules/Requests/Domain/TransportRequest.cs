@@ -133,4 +133,11 @@ public sealed class TransportRequest
         Status = RequestStatus.Completed;
         UpdatedAt = now;
     }
+
+    public void Reopen(DateTimeOffset now)
+    {
+        AssignedProfessionalId = null;
+        Status = Kind == RequestKind.Scheduled ? RequestStatus.ScheduledSearching : RequestStatus.Searching;
+        UpdatedAt = now;
+    }
 }

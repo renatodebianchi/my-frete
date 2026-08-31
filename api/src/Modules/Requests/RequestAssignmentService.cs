@@ -49,4 +49,17 @@ public sealed class RequestAssignmentService(DbContext db, IOutboxWriter outbox,
         r.MarkCompleted(clock.GetUtcNow());
         outbox.Enqueue(new RequestStatusChanged(r.Id, from, "completed"));
     }
+
+    public async Task ReopenAsync(Guid requestId, CancellationToken ct = default)
+    {
+        var r = await db.Set<TransportRequest>().FirstOrDefaultAsync(x => x.Id == requestId, ct);
+        if (r is null || r.Status is RequestStatus.Cancelled or RequestStatus.Completed)
+        {
+            return;
+        }
+
+        var from = r.Status.ToWire();
+        r.Reopen(clock.GetUtcNow());
+        outbox.Enqueue(new RequestStatusChanged(r.Id, from, r.Status.ToWire()));
+    }
 }

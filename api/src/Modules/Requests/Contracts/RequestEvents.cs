@@ -42,4 +42,7 @@ public interface IRequestAssignment
     Task MarkExhaustedAsync(Guid requestId, CancellationToken ct = default);
 
     Task MarkCompletedAsync(Guid requestId, CancellationToken ct = default);
+
+    /// <summary>A professional cancelled after accepting — put the request back into the search (FR-027).</summary>
+    Task ReopenAsync(Guid requestId, CancellationToken ct = default);
 }

@@ -73,6 +73,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Notifications.NotificationsModule).Assembly);
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Pricing.PricingModule).Assembly);
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Requests.RequestsModule).Assembly);
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Trips.TripsModule).Assembly);
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Matching.MatchingModule).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

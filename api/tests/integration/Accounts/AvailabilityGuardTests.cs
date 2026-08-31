@@ -5,7 +5,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MyFrete.Modules.Accounts.Professionals;
+using MyFrete.BuildingBlocks.Contracts;
 using Xunit;
 
 namespace MyFrete.Tests.Integration.Accounts;

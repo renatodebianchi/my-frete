@@ -1,7 +1,11 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MyFrete.BuildingBlocks.Configuration;
+using MyFrete.Modules.Accounts.Domain;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
 using Xunit;
@@ -34,6 +38,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("RunMigrationsOnStartup", "true");
         builder.UseSetting("Otlp:Endpoint", string.Empty);
         builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-0123456789abcdef");
+        builder.UseSetting("AppConfig:CacheSeconds", "0");
     }
 
     public async Task InitializeAsync()
@@ -49,6 +54,43 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await base.DisposeAsync();
         await Task.WhenAll(_postgres.DisposeAsync().AsTask(), _redis.DisposeAsync().AsTask());
+    }
+
+    public async Task SetConfigAsync(string key, string value)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var entry = await db.Set<ConfigurationEntry>().FirstOrDefaultAsync(e => e.Key == key);
+        if (entry is null)
+        {
+            db.Add(new ConfigurationEntry { Key = key, Value = value, UpdatedAt = DateTimeOffset.UtcNow });
+        }
+        else
+        {
+            entry.Value = value;
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<Guid> ResolveUserIdAsync(string email)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<DbContext>();
+        return await db.Set<User>().Where(u => u.Email == email).Select(u => u.Id).FirstAsync();
+    }
+
+    /// <summary>Integration tests share one database — reset the professional pool between matching scenarios.</summary>
+    public async Task ParkAllProfessionalsAsync()
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<DbContext>();
+        await db.Set<ProfessionalProfile>()
+            .Where(p => p.ImmediateAvailability)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.ImmediateAvailability, false)
+                .SetProperty(p => p.LastLocation, (NetTopologySuite.Geometries.Point?)null)
+                .SetProperty(p => p.LastLocationAt, (DateTimeOffset?)null));
     }
 
     public async Task<(string AccessToken, string RefreshToken)> RegisterAsync(

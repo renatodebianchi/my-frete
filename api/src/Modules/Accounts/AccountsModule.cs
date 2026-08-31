@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using MyFrete.BuildingBlocks.Contracts;
 using MyFrete.BuildingBlocks.Results;
 using MyFrete.Modules.Accounts.Auth;
 using MyFrete.Modules.Accounts.Domain;

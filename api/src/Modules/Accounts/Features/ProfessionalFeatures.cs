@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using MyFrete.BuildingBlocks.Application;
 using MyFrete.BuildingBlocks.Audit;
 using MyFrete.BuildingBlocks.Configuration;
+using MyFrete.BuildingBlocks.Contracts;
 using MyFrete.BuildingBlocks.Results;
 using MyFrete.Modules.Accounts.Domain;
-using MyFrete.Modules.Accounts.Professionals;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 

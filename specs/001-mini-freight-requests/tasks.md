@@ -184,9 +184,9 @@ que é concluído pela marcação de entrega do profissional (com verificação 
 
 - [X] T043 [P] [US1] Teste de contrato de `POST /pricing/estimate` em `api/tests/contract/Pricing/EstimateTests.cs`
 - [X] T044 [P] [US1] Teste de contrato de `POST /requests`, `GET /requests`, `GET /requests/{id}`, `POST /requests/{id}/cancel` em `api/tests/contract/Requests/RequestsTests.cs`
-- [ ] T045 [P] [US1] Teste de contrato de `GET /offers/inbox`, `POST /offers/{id}/accept`, `POST /offers/{id}/decline` em `api/tests/contract/Matching/OffersTests.cs`
-- [ ] T046 [P] [US1] Teste de contrato de `GET /trips/{id}`, `POST /trips/{id}/deliver`, `POST /trips/{id}/client-response`, `POST /trips/{id}/cancel`, `PATCH /trips/{id}/agreed-amount` em `api/tests/contract/Trips/TripsTests.cs`
-- [ ] T047 [P] [US1] Teste de integração V3: oferta ao mais próximo, aceite em 30 s, `Trip` criada, profissional fica inelegível (FR-011a) em `api/tests/integration/Matching/HappyPathTests.cs`
+- [X] T045 [P] [US1] Teste de contrato de `GET /offers/inbox`, `POST /offers/{id}/accept`, `POST /offers/{id}/decline` em `api/tests/contract/Matching/OffersTests.cs`
+- [X] T046 [P] [US1] Teste de contrato de `GET /trips/{id}`, `POST /trips/{id}/deliver`, `POST /trips/{id}/client-response`, `POST /trips/{id}/cancel`, `PATCH /trips/{id}/agreed-amount` em `api/tests/contract/Trips/TripsTests.cs`
+- [X] T047 [P] [US1] Teste de integração V3: oferta ao mais próximo, aceite em 30 s, `Trip` criada, profissional fica inelegível (FR-011a) em `api/tests/integration/Matching/HappyPathTests.cs`
 - [ ] T048 [P] [US1] Teste de integração V4: expiração → próximo profissional → exaustão no limite (5 min / 8); aceite tardio → 409 (SC-004) em `api/tests/integration/Matching/TimeoutAndLimitTests.cs`
 - [ ] T049 [P] [US1] Teste de integração: aceite concorrente na mesma oferta imediata → exatamente um vence em `api/tests/integration/Matching/ConcurrentAcceptTests.cs`
 - [X] T050 [P] [US1] Testes unitários: fórmula de preço, filtro de elegibilidade, ordenação por proximidade, máquinas de estado de `TransportRequest` e `Trip` em `api/tests/unit/`
@@ -209,23 +209,23 @@ que é concluído pela marcação de entrega do profissional (com verificação 
 
 ### Implementation for User Story 1 — Matching
 
-- [ ] T060 [P] [US1] Entidades `MatchingSession` e `Offer` + migrações + índice único parcial de oferta `pending` por profissional em `api/src/Modules/Matching/Domain/`
-- [ ] T061 [US1] Consulta de elegibilidade (disponível, capacidade ≥ peso, sem transporte ativo, sem oferta pendente, dentro de `immediate_offer_radius`) via PostGIS `ST_DWithin` em `api/src/Modules/Matching/Eligibility/`
-- [ ] T062 [US1] Ordenação por proximidade (`ST_Distance`) com profissionais de localização acima de `location_ttl` no fim da fila (FR-012a) em `api/src/Modules/Matching/Eligibility/`
-- [ ] T063 [US1] Orquestrador de ofertas (`IHostedService`): envia uma oferta, cria chave Redis com TTL = `offer_ttl`, expira por keyspace notification + varredura de 5 s, avança/esgota com contadores de tempo e de profissionais (FR-013/014/017a) em `api/src/Modules/Matching/Orchestration/`
-- [ ] T064 [US1] `POST /offers/{id}/accept` (checa janela → 409 `expired`; lock de atribuição única; cria `Trip`; emite `matching.offer.accepted.v1`) e `POST /offers/{id}/decline` em `api/src/Modules/Matching/Features/`
-- [ ] T065 [US1] `GET /offers/inbox` (oferta pendente do profissional autenticado) em `api/src/Modules/Matching/Features/Inbox/`
-- [ ] T066 [US1] Consumers: `request.confirmed.v1` → inicia `MatchingSession`; `matching.exhausted.v1` → `TransportRequest` para `awaiting_schedule_decision` em `api/src/Modules/Matching/Handlers/`
+- [X] T060 [P] [US1] Entidades `MatchingSession` e `Offer` + migrações + índice único parcial de oferta `pending` por profissional em `api/src/Modules/Matching/Domain/`
+- [X] T061 [US1] Consulta de elegibilidade (disponível, capacidade ≥ peso, sem transporte ativo, sem oferta pendente, dentro de `immediate_offer_radius`) via PostGIS `ST_DWithin` em `api/src/Modules/Matching/Eligibility/`
+- [X] T062 [US1] Ordenação por proximidade (`ST_Distance`) com profissionais de localização acima de `location_ttl` no fim da fila (FR-012a) em `api/src/Modules/Matching/Eligibility/`
+- [X] T063 [US1] Orquestrador de ofertas (`IHostedService`): envia uma oferta, cria chave Redis com TTL = `offer_ttl`, expira por keyspace notification + varredura de 5 s, avança/esgota com contadores de tempo e de profissionais (FR-013/014/017a) em `api/src/Modules/Matching/Orchestration/`
+- [X] T064 [US1] `POST /offers/{id}/accept` (checa janela → 409 `expired`; lock de atribuição única; cria `Trip`; emite `matching.offer.accepted.v1`) e `POST /offers/{id}/decline` em `api/src/Modules/Matching/Features/`
+- [X] T065 [US1] `GET /offers/inbox` (oferta pendente do profissional autenticado) em `api/src/Modules/Matching/Features/Inbox/`
+- [X] T066 [US1] Consumers: `request.confirmed.v1` → inicia `MatchingSession`; `matching.exhausted.v1` → `TransportRequest` para `awaiting_schedule_decision` em `api/src/Modules/Matching/Handlers/`
 
 ### Implementation for User Story 1 — Trips
 
-- [ ] T067 [P] [US1] Entidade `Trip` (enum de status, `agreed_amount`, `delivered_at`, `client_response`, `payment_settled_outside_app`) + migração em `api/src/Modules/Trips/Domain/`
-- [ ] T068 [US1] Criação de `Trip` ao aceitar oferta (`agreed_amount` = estimativa) + emissão de `trip.created.v1` em `api/src/Modules/Trips/Handlers/`
-- [ ] T069 [US1] `PATCH /trips/{id}/agreed-amount` (editável enquanto `contratada`/`em_andamento`) em `api/src/Modules/Trips/Features/AgreedAmount/`
-- [ ] T070 [US1] `POST /trips/{id}/deliver` (profissional → `entregue`, libera o profissional para novas ofertas, emite `trip.delivered.v1`) em `api/src/Modules/Trips/Features/Deliver/`
-- [ ] T071 [US1] `POST /trips/{id}/client-response` (`confirm`/`dispute` → `confirmada`/`contestada`, registra `AuditEvent` na contestação — FR-025e) em `api/src/Modules/Trips/Features/ClientResponse/`
-- [ ] T072 [US1] `POST /trips/{id}/cancel` (antes do início; reabre matching imediato — FR-027) e `GET /trips/{id}` + `GET /trips` (histórico do profissional) em `api/src/Modules/Trips/Features/`
-- [ ] T073 [US1] Job de verificação de entrega: `delivered_at + delivery_verification_hours` sem resposta → notifica cliente e profissional, seta `verification_notified_at` (FR-025d) em `api/src/Modules/Trips/Jobs/`
+- [X] T067 [P] [US1] Entidade `Trip` (enum de status, `agreed_amount`, `delivered_at`, `client_response`, `payment_settled_outside_app`) + migração em `api/src/Modules/Trips/Domain/`
+- [X] T068 [US1] Criação de `Trip` ao aceitar oferta (`agreed_amount` = estimativa) + emissão de `trip.created.v1` em `api/src/Modules/Trips/Handlers/`
+- [X] T069 [US1] `PATCH /trips/{id}/agreed-amount` (editável enquanto `contratada`/`em_andamento`) em `api/src/Modules/Trips/Features/AgreedAmount/`
+- [X] T070 [US1] `POST /trips/{id}/deliver` (profissional → `entregue`, libera o profissional para novas ofertas, emite `trip.delivered.v1`) em `api/src/Modules/Trips/Features/Deliver/`
+- [X] T071 [US1] `POST /trips/{id}/client-response` (`confirm`/`dispute` → `confirmada`/`contestada`, registra `AuditEvent` na contestação — FR-025e) em `api/src/Modules/Trips/Features/ClientResponse/`
+- [X] T072 [US1] `POST /trips/{id}/cancel` (antes do início; reabre matching imediato — FR-027) e `GET /trips/{id}` + `GET /trips` (histórico do profissional) em `api/src/Modules/Trips/Features/`
+- [X] T073 [US1] Job de verificação de entrega: `delivered_at + delivery_verification_hours` sem resposta → notifica cliente e profissional, seta `verification_notified_at` (FR-025d) em `api/src/Modules/Trips/Jobs/`
 
 ### Implementation for User Story 1 — Notifications & Mobile
 

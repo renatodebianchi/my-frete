@@ -10,9 +10,11 @@ using MyFrete.BuildingBlocks;
 using MyFrete.BuildingBlocks.Audit;
 using MyFrete.Migrations;
 using MyFrete.Modules.Accounts;
+using MyFrete.Modules.Matching;
 using MyFrete.Modules.Notifications;
 using MyFrete.Modules.Pricing;
 using MyFrete.Modules.Requests;
+using MyFrete.Modules.Trips;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,11 +37,15 @@ builder.Services.AddBuildingBlocks(
     typeof(AccountsModule).Assembly,
     typeof(NotificationsModule).Assembly,
     typeof(PricingModule).Assembly,
-    typeof(RequestsModule).Assembly);
+    typeof(RequestsModule).Assembly,
+    typeof(TripsModule).Assembly,
+    typeof(MatchingModule).Assembly);
 builder.Services.AddAccountsModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddPricingModule();
 builder.Services.AddRequestsModule();
+builder.Services.AddTripsModule();
+builder.Services.AddMatchingModule();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(postgres, name: "postgres", tags: ["ready"])
@@ -104,6 +110,8 @@ app.MapAccountsEndpoints();
 app.MapNotificationsEndpoints();
 app.MapPricingEndpoints();
 app.MapRequestsEndpoints();
+app.MapMatchingEndpoints();
+app.MapTripsEndpoints();
 
 app.Run();
 

@@ -1,16 +1,20 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 
 namespace MyFrete.BuildingBlocks.Configuration;
 
 /// <summary>
-/// Reads business parameters from the <c>configuration</c> table, cached ~30s so operators can
+/// Reads business parameters from the <c>configuration</c> table, cached briefly so operators can
 /// change values without a deploy (FR-009, FR-014, FR-017a, FR-019, FR-022a, FR-025d, FR-012a).
+/// Cache window is <c>AppConfig:CacheSeconds</c> (default 30; set 0 to disable, e.g. in tests).
 /// </summary>
-public sealed class AppConfiguration(DbContext db, IMemoryCache cache) : IAppConfiguration
+public sealed class AppConfiguration(DbContext db, IMemoryCache cache, IConfiguration configuration)
+    : IAppConfiguration
 {
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(30);
+    private readonly TimeSpan _cacheTtl =
+        TimeSpan.FromSeconds(configuration.GetValue("AppConfig:CacheSeconds", 30));
 
     public async Task<int> GetIntAsync(string key, int fallback, CancellationToken ct = default)
     {
@@ -33,7 +37,8 @@ public sealed class AppConfiguration(DbContext db, IMemoryCache cache) : IAppCon
 
     private async Task<string?> GetRawAsync(string key, CancellationToken ct)
     {
-        if (cache.TryGetValue<string?>(CacheKey(key), out var cached))
+        var cacheKey = $"config:{key}";
+        if (_cacheTtl > TimeSpan.Zero && cache.TryGetValue<string?>(cacheKey, out var cached))
         {
             return cached;
         }
@@ -43,9 +48,11 @@ public sealed class AppConfiguration(DbContext db, IMemoryCache cache) : IAppCon
             .Select(e => e.Value)
             .FirstOrDefaultAsync(ct);
 
-        cache.Set(CacheKey(key), value, CacheTtl);
+        if (_cacheTtl > TimeSpan.Zero)
+        {
+            cache.Set(cacheKey, value, _cacheTtl);
+        }
+
         return value;
     }
-
-    private static string CacheKey(string key) => $"config:{key}";
 }
