@@ -182,30 +182,30 @@ que é concluído pela marcação de entrega do profissional (com verificação 
 
 ### Tests for User Story 1
 
-- [ ] T043 [P] [US1] Teste de contrato de `POST /pricing/estimate` em `api/tests/contract/Pricing/EstimateTests.cs`
-- [ ] T044 [P] [US1] Teste de contrato de `POST /requests`, `GET /requests`, `GET /requests/{id}`, `POST /requests/{id}/cancel` em `api/tests/contract/Requests/RequestsTests.cs`
+- [X] T043 [P] [US1] Teste de contrato de `POST /pricing/estimate` em `api/tests/contract/Pricing/EstimateTests.cs`
+- [X] T044 [P] [US1] Teste de contrato de `POST /requests`, `GET /requests`, `GET /requests/{id}`, `POST /requests/{id}/cancel` em `api/tests/contract/Requests/RequestsTests.cs`
 - [ ] T045 [P] [US1] Teste de contrato de `GET /offers/inbox`, `POST /offers/{id}/accept`, `POST /offers/{id}/decline` em `api/tests/contract/Matching/OffersTests.cs`
 - [ ] T046 [P] [US1] Teste de contrato de `GET /trips/{id}`, `POST /trips/{id}/deliver`, `POST /trips/{id}/client-response`, `POST /trips/{id}/cancel`, `PATCH /trips/{id}/agreed-amount` em `api/tests/contract/Trips/TripsTests.cs`
 - [ ] T047 [P] [US1] Teste de integração V3: oferta ao mais próximo, aceite em 30 s, `Trip` criada, profissional fica inelegível (FR-011a) em `api/tests/integration/Matching/HappyPathTests.cs`
 - [ ] T048 [P] [US1] Teste de integração V4: expiração → próximo profissional → exaustão no limite (5 min / 8); aceite tardio → 409 (SC-004) em `api/tests/integration/Matching/TimeoutAndLimitTests.cs`
 - [ ] T049 [P] [US1] Teste de integração: aceite concorrente na mesma oferta imediata → exatamente um vence em `api/tests/integration/Matching/ConcurrentAcceptTests.cs`
-- [ ] T050 [P] [US1] Testes unitários: fórmula de preço, filtro de elegibilidade, ordenação por proximidade, máquinas de estado de `TransportRequest` e `Trip` em `api/tests/unit/`
+- [X] T050 [P] [US1] Testes unitários: fórmula de preço, filtro de elegibilidade, ordenação por proximidade, máquinas de estado de `TransportRequest` e `Trip` em `api/tests/unit/`
 - [ ] T050a [P] [US1] Testes de contrato dos payloads de evento de US1 (`request.confirmed.v1`, `matching.offer.sent/accepted/expired.v1`, `matching.exhausted.v1`, `trip.created/delivered/client_responded/verification_due.v1`) — provider e consumer — em `api/tests/contract/Events/Us1EventsContractTests.cs` — Constituição §IV
 
 ### Implementation for User Story 1 — Pricing
 
-- [ ] T051 [P] [US1] Entidade `PricingRule` + migração + consulta por janela de vigência em `api/src/Modules/Pricing/Domain/`
-- [ ] T052 [P] [US1] `IRouteDistanceProvider`: implementação externa (matriz de distância) + fallback Haversine × `sinuosity_factor`, com Polly (timeout/retry/circuit breaker) em `api/src/Modules/Pricing/Routing/`
-- [ ] T053 [US1] Handler de estimativa + `POST /pricing/estimate` (retorna `distanceSource`, `isEstimate=true`) em `api/src/Modules/Pricing/Features/Estimate/`
+- [X] T051 [P] [US1] Entidade `PricingRule` + migração + consulta por janela de vigência em `api/src/Modules/Pricing/Domain/`
+- [X] T052 [P] [US1] `IRouteDistanceProvider`: implementação externa (matriz de distância) + fallback Haversine × `sinuosity_factor`, com Polly (timeout/retry/circuit breaker) em `api/src/Modules/Pricing/Routing/`
+- [X] T053 [US1] Handler de estimativa + `POST /pricing/estimate` (retorna `distanceSource`, `isEstimate=true`) em `api/src/Modules/Pricing/Features/Estimate/`
 
 ### Implementation for User Story 1 — Requests
 
-- [ ] T054 [P] [US1] Entidade `TransportRequest` (itens jsonb, pontos geography, enum de status, snapshot de `pricing_rule_id`) + migração em `api/src/Modules/Requests/Domain/`
-- [ ] T055 [US1] Resolução/geocodificação de endereços + validação de origem ≠ destino e localizáveis (FR-007) em `api/src/Modules/Requests/Addressing/`
-- [ ] T056 [US1] Handler de criação de requisição (snapshot da `PricingRule`, persiste, emite `request.confirmed.v1`) + `POST /requests` com `Idempotency-Key` em `api/src/Modules/Requests/Features/CreateRequest/`
-- [ ] T057 [US1] `GET /requests/{id}` (projeção de status consolidado + `tripStatus`, profissional atribuído **com `verificationStatus` — FR-005a**, telefone oculto antes do vínculo — FR-031) e `GET /requests` (histórico, FR-029) em `api/src/Modules/Requests/Features/`
-- [ ] T058 [US1] `POST /requests/{id}/cancel` (FR-026) + emissão de `request.cancelled.v1` em `api/src/Modules/Requests/Features/CancelRequest/`
-- [ ] T059 [US1] Job de timeout de `awaiting_schedule_decision` (`schedule_decision_timeout` → `unfulfilled`, apoia SC-007) em `api/src/Modules/Requests/Jobs/`
+- [X] T054 [P] [US1] Entidade `TransportRequest` (itens jsonb, pontos geography, enum de status, snapshot de `pricing_rule_id`) + migração em `api/src/Modules/Requests/Domain/`
+- [X] T055 [US1] Resolução/geocodificação de endereços + validação de origem ≠ destino e localizáveis (FR-007) em `api/src/Modules/Requests/Addressing/`
+- [X] T056 [US1] Handler de criação de requisição (snapshot da `PricingRule`, persiste, emite `request.confirmed.v1`) + `POST /requests` com `Idempotency-Key` em `api/src/Modules/Requests/Features/CreateRequest/`
+- [X] T057 [US1] `GET /requests/{id}` (projeção de status consolidado + `tripStatus`, profissional atribuído **com `verificationStatus` — FR-005a**, telefone oculto antes do vínculo — FR-031) e `GET /requests` (histórico, FR-029) em `api/src/Modules/Requests/Features/`
+- [X] T058 [US1] `POST /requests/{id}/cancel` (FR-026) + emissão de `request.cancelled.v1` em `api/src/Modules/Requests/Features/CancelRequest/`
+- [X] T059 [US1] Job de timeout de `awaiting_schedule_decision` (`schedule_decision_timeout` → `unfulfilled`, apoia SC-007) em `api/src/Modules/Requests/Jobs/`
 
 ### Implementation for User Story 1 — Matching
 

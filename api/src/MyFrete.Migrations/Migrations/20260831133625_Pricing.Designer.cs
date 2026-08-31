@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyFrete.Migrations;
 using NetTopologySuite.Geometries;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyFrete.Migrations.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831133625_Pricing")]
+    partial class Pricing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -582,117 +585,6 @@ namespace MyFrete.Migrations.Migrations
                         .HasDatabaseName("ix_pricing_rule_effective_from");
 
                     b.ToTable("pricing_rule", "pricing");
-                });
-
-            modelBuilder.Entity("MyFrete.Modules.Requests.Domain.TransportRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid?>("AssignedProfessionalId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("assigned_professional_id");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("client_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
-                        .HasColumnName("currency");
-
-                    b.Property<string>("DestinationAddress")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("destination_address");
-
-                    b.Property<Point>("DestinationPoint")
-                        .IsRequired()
-                        .HasColumnType("geography (point, 4326)")
-                        .HasColumnName("destination_point");
-
-                    b.Property<double>("DistanceMeters")
-                        .HasColumnType("double precision")
-                        .HasColumnName("distance_meters");
-
-                    b.Property<string>("DistanceSource")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("distance_source");
-
-                    b.Property<decimal>("EstimatedPrice")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("estimated_price");
-
-                    b.Property<int>("EstimatedWeightGrams")
-                        .HasColumnType("integer")
-                        .HasColumnName("estimated_weight_grams");
-
-                    b.Property<string>("ItemsJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("items");
-
-                    b.Property<string>("Kind")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("kind");
-
-                    b.Property<string>("OriginAddress")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("origin_address");
-
-                    b.Property<Point>("OriginPoint")
-                        .IsRequired()
-                        .HasColumnType("geography (point, 4326)")
-                        .HasColumnName("origin_point");
-
-                    b.Property<Guid>("PricingRuleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("pricing_rule_id");
-
-                    b.Property<DateOnly?>("ScheduledDate")
-                        .HasColumnType("date")
-                        .HasColumnName("scheduled_date");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("status");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_transport_request");
-
-                    b.HasIndex("OriginPoint")
-                        .HasDatabaseName("ix_transport_request_origin_point");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("OriginPoint"), "gist");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_transport_request_status");
-
-                    b.HasIndex("ClientId", "CreatedAt")
-                        .HasDatabaseName("ix_transport_request_client_id_created_at");
-
-                    b.ToTable("transport_request", "requests");
                 });
 #pragma warning restore 612, 618
         }

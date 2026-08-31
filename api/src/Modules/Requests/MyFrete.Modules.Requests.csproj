@@ -4,6 +4,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../MyFrete.BuildingBlocks/MyFrete.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Pricing/MyFrete.Modules.Pricing.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" />
@@ -11,5 +12,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" />
+    <PackageReference Include="NetTopologySuite" />
   </ItemGroup>
 </Project>

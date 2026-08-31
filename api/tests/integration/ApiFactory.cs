@@ -42,6 +42,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         // Force the host (and startup migration) to build now.
         using var client = CreateClient();
         (await client.GetAsync("/ready")).EnsureSuccessStatusCode();
+        await MyFrete.Api.Cli.SeedCommand.RunAsync(["seed", "--demo"], Services, CancellationToken.None);
     }
 
     public new async Task DisposeAsync()

@@ -71,6 +71,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         // Module-owned tables (each module configures its own entities).
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Accounts.AccountsModule).Assembly);
         b.ApplyConfigurationsFromAssembly(typeof(Modules.Notifications.NotificationsModule).Assembly);
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Pricing.PricingModule).Assembly);
+        b.ApplyConfigurationsFromAssembly(typeof(Modules.Requests.RequestsModule).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

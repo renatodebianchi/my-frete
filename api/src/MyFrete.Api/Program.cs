@@ -11,6 +11,7 @@ using MyFrete.BuildingBlocks.Audit;
 using MyFrete.Migrations;
 using MyFrete.Modules.Accounts;
 using MyFrete.Modules.Notifications;
+using MyFrete.Modules.Pricing;
 using MyFrete.Modules.Requests;
 using Serilog;
 
@@ -29,9 +30,16 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 
 builder.Services.AddPersistence(postgres);
-builder.Services.AddBuildingBlocks(redis, typeof(AccountsModule).Assembly, typeof(NotificationsModule).Assembly);
+builder.Services.AddBuildingBlocks(
+    redis,
+    typeof(AccountsModule).Assembly,
+    typeof(NotificationsModule).Assembly,
+    typeof(PricingModule).Assembly,
+    typeof(RequestsModule).Assembly);
 builder.Services.AddAccountsModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
+builder.Services.AddPricingModule();
+builder.Services.AddRequestsModule();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(postgres, name: "postgres", tags: ["ready"])
@@ -94,6 +102,7 @@ app.MapHealthChecks("/ready", new HealthCheckOptions { Predicate = c => c.Tags.C
 app.MapGet("/v1/ping", () => Results.Ok(new { pong = true }));
 app.MapAccountsEndpoints();
 app.MapNotificationsEndpoints();
+app.MapPricingEndpoints();
 app.MapRequestsEndpoints();
 
 app.Run();

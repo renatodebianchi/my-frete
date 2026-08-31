@@ -29,10 +29,11 @@ public sealed class AuthGateTests(ApiFactory factory)
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
+        // Empty body -> past the auth gate, fails on binding/validation (not 401/403).
         var response = await client.PostAsync("/v1/requests", content: null);
 
-        // 501 = past the gate, endpoint body lands in US1. The point is: not 401.
-        response.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
+        response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().NotBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
