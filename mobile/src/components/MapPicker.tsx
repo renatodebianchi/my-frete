@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import MapView, { Marker, type MapPressEvent } from 'react-native-maps';
 
@@ -16,12 +16,23 @@ export function MapPicker({
   onChange: (point: LatLng) => void;
 }) {
   const [region] = useState(SP);
+  const mapRef = useRef<MapView>(null);
+
+  // Recenter when the pin is set from outside (e.g. geocoded from the address field).
+  useEffect(() => {
+    if (!value) return;
+    mapRef.current?.animateToRegion(
+      { latitude: value.lat, longitude: value.lng, latitudeDelta: 0.02, longitudeDelta: 0.02 },
+      450,
+    );
+  }, [value]);
 
   return (
     <View className="mb-4">
       <Text className="mb-1 text-sm font-medium text-neutral-700">{label}</Text>
       <View className="h-44 overflow-hidden rounded-lg border border-neutral-300">
         <MapView
+          ref={mapRef}
           style={{ flex: 1 }}
           initialRegion={region}
           onPress={(e: MapPressEvent) =>

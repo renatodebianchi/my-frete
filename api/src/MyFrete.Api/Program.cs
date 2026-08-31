@@ -75,7 +75,7 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddProblemDetailsHandling();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c => c.CustomSchemaIds(t => t.FullName!.Replace("+", ".")));
 
 if (args is ["seed", ..])
 {

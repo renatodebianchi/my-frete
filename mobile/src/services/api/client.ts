@@ -9,6 +9,8 @@ export class ApiError extends Error {
     readonly code: string | undefined,
     message: string,
     readonly body: unknown,
+    /** Field -> messages, from a 422 validation ProblemDetails (`errors` map). */
+    readonly fieldErrors?: Record<string, string[]>,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -94,13 +96,20 @@ export async function apiFetch<T>(
   const body: unknown = text.length ? safeJson(text) : null;
 
   if (!response.ok) {
-    const problem = (body ?? {}) as { detail?: string; title?: string; code?: string };
-    throw new ApiError(
-      response.status,
-      problem.code,
-      problem.detail ?? problem.title ?? `Request failed (${response.status})`,
-      body,
-    );
+    const problem = (body ?? {}) as {
+      detail?: string;
+      title?: string;
+      code?: string;
+      errors?: Record<string, string[]>;
+    };
+    const fieldErrors =
+      problem.errors && typeof problem.errors === 'object' ? problem.errors : undefined;
+    const flattened = fieldErrors ? Object.values(fieldErrors).flat() : [];
+    const message =
+      flattened.length > 0
+        ? flattened.join('\n')
+        : (problem.detail ?? problem.title ?? `Request failed (${response.status})`);
+    throw new ApiError(response.status, problem.code, message, body, fieldErrors);
   }
 
   return body as T;

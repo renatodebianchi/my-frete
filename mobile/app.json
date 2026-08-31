@@ -17,13 +17,22 @@
     },
     "android": {
       "package": "com.myfrete.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
       "expo-dev-client",
       "expo-secure-store",
-      ["expo-location", { "locationAlwaysAndWhenInUsePermission": "O my-frete usa sua localização enquanto você está disponível para fretes." }],
-      ["react-native-maps", {}]
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "O my-frete usa sua localização enquanto você está disponível para fretes."
+        }
+      ],
+      "expo-asset"
     ],
     "extra": {
       "apiBaseUrl": "http://localhost:8080/v1"
