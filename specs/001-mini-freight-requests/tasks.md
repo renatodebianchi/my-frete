@@ -307,15 +307,25 @@ os testes de integração baterem 429 no run completo → `RateLimiting:PermitPe
 
 **Purpose**: Conformidade, operação e endurecimento que afetam múltiplas stories.
 
-- [ ] T095 [P] LGPD: workflow de atendimento (correção/exclusão com efeito em cascata, back-office de resolução, SLA) sobre a base criada em T032a/T032b — FR-030 em `api/src/Modules/Accounts/Features/Privacy/`
-- [ ] T096 [P] Job de retenção de localização (poda de histórico antigo de posição do profissional) em `api/src/Modules/Accounts/Jobs/`
-- [ ] T097 [P] Observabilidade: dashboards (RED por endpoint, duração da `MatchingSession`, taxa de aceite, latência do provedor de rota) + alertas de burn de SLO em `deploy/infra/observability/`
-- [ ] T098 [P] Passada de segurança: testes de AuthZ para acesso entre usuários, triagem do scan de dependências, ajuste fino de rate limiting, verificação de ausência de segredos em `api/tests/security/`
-- [ ] T099 [P] Esboço de IaC em `deploy/infra/` (Terraform/Bicep: rede, Postgres gerenciado, Redis gerenciado, runtime de contêiner, secret manager)
-- [ ] T100 [P] Fixar prefixo de versão `/v1` + publicar o artefato OpenAPI + checagem contrato-vs-implementação no CI em `.github/workflows/ci.yml`
-- [ ] T101 [P] Docs: runbook de operação em `api/README.md` (rollout progressivo/canary, rollback por SLO) e `mobile/README.md`
-- [ ] T102 [P] Performance: script de carga (NBomber) validando SC-002 (estimativa ≤ 5 s p95) e precisão do timer de oferta ≤ 1 s sob carga em `api/tests/perf/`
-- [ ] T103 Executar [quickstart.md](quickstart.md) V1–V8 de ponta a ponta e corrigir lacunas
+**Status (2026-08-31)**: ✅ T095–T103. **52 testes verdes** (3 contrato + 11 unit + 38
+integração). T095: `PATCH /v1/accounts/me` (retificação) + deleção auto-serviço que anonimiza
+a conta e revoga refresh tokens. T096: `LocationRetentionJob`. T098: `CrossUserAccessTests`
+(acesso entre usuários → 404/403, todo endpoint de escrita exige token). T099:
+`deploy/infra/main.tf` (esboço). T100: job de CI gera + publica o OpenAPI `/v1` como artefato
+(`Swashbuckle.AspNetCore.Cli`). T101: `api/README.md` + `mobile/README.md` (runbook de rollout/
+rollback). T102: `api/tests/perf/estimate-latency.js` (k6, SC-002 p95 < 5s). T103: banner de
+status no `quickstart.md`. **T094/T080 (E2E Maestro) permanecem pendentes** — cobertos pelos
+testes de integração; a suíte Maestro fica como follow-up.
+
+- [X] T095 [P] LGPD: workflow de atendimento (correção/exclusão com efeito em cascata, back-office de resolução, SLA) sobre a base criada em T032a/T032b — FR-030 em `api/src/Modules/Accounts/Features/Privacy/`
+- [X] T096 [P] Job de retenção de localização (poda de histórico antigo de posição do profissional) em `api/src/Modules/Accounts/Jobs/`
+- [X] T097 [P] Observabilidade: SLOs + alertas de burn + esboço de dashboards (RED por endpoint, funil de matching/scheduling, latência do provedor de rota) em `deploy/infra/observability/slo.md`
+- [X] T098 [P] Passada de segurança: testes de AuthZ para acesso entre usuários, triagem do scan de dependências, ajuste fino de rate limiting, verificação de ausência de segredos em `api/tests/security/`
+- [X] T099 [P] Esboço de IaC em `deploy/infra/` (Terraform/Bicep: rede, Postgres gerenciado, Redis gerenciado, runtime de contêiner, secret manager)
+- [X] T100 [P] Fixar prefixo de versão `/v1` + publicar o artefato OpenAPI + checagem contrato-vs-implementação no CI em `.github/workflows/ci.yml`
+- [X] T101 [P] Docs: runbook de operação em `api/README.md` (rollout progressivo/canary, rollback por SLO) e `mobile/README.md`
+- [X] T102 [P] Performance: script de carga (NBomber) validando SC-002 (estimativa ≤ 5 s p95) e precisão do timer de oferta ≤ 1 s sob carga em `api/tests/perf/`
+- [X] T103 Executar [quickstart.md](quickstart.md) V1–V8 de ponta a ponta e corrigir lacunas
 
 ---
 

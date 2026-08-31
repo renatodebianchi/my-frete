@@ -58,6 +58,42 @@ public sealed class PrivacyTests(ApiFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Fact]
+    public async Task Rectification_updates_name_and_phone()
+    {
+        var email = $"rect-{Guid.NewGuid():N}@example.com";
+        var (accessToken, _) = await factory.RegisterAsync(email, ["client"]);
+        var client = Authed(accessToken);
+
+        var patch = await client.PatchAsJsonAsync("/v1/accounts/me", new { name = "Nome Corrigido", phone = "+5511987654321" });
+
+        patch.StatusCode.Should().Be(HttpStatusCode.OK);
+        var me = await patch.Content.ReadFromJsonAsync<JsonElement>();
+        me.GetProperty("name").GetString().Should().Be("Nome Corrigido");
+        me.GetProperty("phone").GetString().Should().Be("+5511987654321");
+    }
+
+    [Fact]
+    public async Task Deletion_anonymises_the_account_and_ends_the_session()
+    {
+        var email = $"del-{Guid.NewGuid():N}@example.com";
+        var (accessToken, refreshToken) = await factory.RegisterAsync(email, ["client"]);
+        var client = Authed(accessToken);
+
+        var deletion = await client.PostAsJsonAsync("/v1/privacy/data-subject-requests", new { kind = "deletion" });
+        deletion.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+        // The refresh token is revoked.
+        var refresh = await factory.CreateClient()
+            .PostAsJsonAsync("/v1/auth/refresh", new { refreshToken });
+        refresh.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        // The access token still validates until it expires, but the profile is anonymised.
+        var me = await client.GetFromJsonAsync<JsonElement>("/v1/accounts/me");
+        me.GetProperty("name").GetString().Should().Be("Usuário removido");
+        me.GetProperty("email").GetString().Should().NotBe(email);
+    }
+
     private HttpClient Authed(string token)
     {
         var client = factory.CreateClient();

@@ -61,6 +61,7 @@ public static class AccountsModule
         services.TryAddScoped<IProfessionalDirectory, ProfessionalDirectory>();
         services.TryAddScoped<IVerificationProvider, NoOpVerificationProvider>();
         services.AddScoped<VerificationService>();
+        services.AddHostedService<Jobs.LocationRetentionJob>();
 
         return services;
     }
@@ -91,6 +92,12 @@ public static class AccountsModule
         v1.MapGet("/accounts/me", async (ISender sender) =>
         {
             var result = await sender.Send(new GetMeQuery());
+            return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblemResult();
+        }).RequireAuthorization();
+
+        v1.MapPatch("/accounts/me", async (UpdateProfileBody body, ISender sender) =>
+        {
+            var result = await sender.Send(new UpdateMyProfileCommand(body.Name, body.Phone));
             return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblemResult();
         }).RequireAuthorization();
 
@@ -168,6 +175,8 @@ public sealed record LoginRequest(string Email, string Password);
 public sealed record RefreshRequest(string RefreshToken);
 
 public sealed record DataSubjectRequestBody(string Kind, string? Details);
+
+public sealed record UpdateProfileBody(string? Name, string? Phone);
 
 public sealed record UpdateProfessionalBody(decimal? MaxLoadKg, bool? ImmediateAvailability);
 

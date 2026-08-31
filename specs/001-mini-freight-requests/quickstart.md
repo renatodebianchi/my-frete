@@ -3,6 +3,15 @@
 Guia para subir o ambiente e validar as jornadas P1/P2 ponta a ponta. Detalhes de modelo e
 contrato estão em [data-model.md](data-model.md) e [contracts/openapi.yaml](contracts/openapi.yaml).
 
+> **Status (2026-08-31)**: US4, US3, US1 e US2 implementadas e verificadas. **45 testes
+> automatizados verdes** (contrato + unit + integração com Testcontainers) cobrem V1–V7 abaixo.
+> Endpoints reais: `/v1/auth/*`, `/v1/accounts/me` (+ `PATCH` para retificação LGPD),
+> `/v1/professionals/me` (+ `/location`, `/schedule-availability`), `/v1/pricing/estimate`,
+> `/v1/requests*` (+ `/schedule-decision`), `/v1/offers/*`, `/v1/schedule-offers/*`,
+> `/v1/trips/*`, `/v1/privacy/*`. Push usa o fallback de log (`[push:noop]`) sem chave do Expo.
+> Provedor de rota externo não configurado → estimativa usa o fallback geodésico
+> (`distanceSource: geodesic_fallback`).
+
 ## Pré-requisitos
 
 - **Docker** (Desktop ou Engine + Compose v2) — obrigatório: o backend é *Docker-first*
