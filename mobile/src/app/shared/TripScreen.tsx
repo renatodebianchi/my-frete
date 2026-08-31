@@ -29,7 +29,9 @@ export function TripScreen({ route }: SharedStackScreenProps<'Trip'>) {
     queryKey: ['trip', tripId],
     queryFn: () => freightApi.getTrip(tripId),
     refetchInterval: (q) =>
-      ['contratada', 'em_andamento', 'entregue'].includes(q.state.data?.status ?? '') ? 4000 : false,
+      ['contratada', 'em_andamento', 'entregue'].includes(q.state.data?.status ?? '')
+        ? 4000
+        : false,
   });
 
   if (!trip) {
@@ -86,11 +88,17 @@ export function TripScreen({ route }: SharedStackScreenProps<'Trip'>) {
 
       <View className="gap-3">
         {isPro && (trip.status === 'contratada' || trip.status === 'em_andamento') && (
-          <Button title="Marcar como entregue" onPress={() => run(() => freightApi.deliverTrip(tripId))} />
+          <Button
+            title="Marcar como entregue"
+            onPress={() => run(() => freightApi.deliverTrip(tripId))}
+          />
         )}
         {isClientView && trip.status === 'entregue' && (
           <>
-            <Button title="Confirmar recebimento" onPress={() => run(() => freightApi.clientRespond(tripId, 'confirm'))} />
+            <Button
+              title="Confirmar recebimento"
+              onPress={() => run(() => freightApi.clientRespond(tripId, 'confirm'))}
+            />
             <Button
               title="Contestar entrega"
               variant="ghost"

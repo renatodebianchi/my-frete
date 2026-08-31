@@ -43,7 +43,8 @@ export function NewRequestScreen({ navigation }: ClientStackScreenProps<'NewRequ
         idempotencyKey: Crypto.randomUUID(),
       }),
     onSuccess: ({ id }) => navigation.replace('Tracking', { requestId: id }),
-    onError: (e) => setError(e instanceof ApiError ? e.message : 'Não foi possível criar a requisição.'),
+    onError: (e) =>
+      setError(e instanceof ApiError ? e.message : 'Não foi possível criar a requisição.'),
   });
 
   return (

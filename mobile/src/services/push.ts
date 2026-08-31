@@ -38,8 +38,7 @@ export async function registerPushToken(): Promise<void> {
     });
   }
 
-  const projectId =
-    Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
 
   const { data: token } = await Notifications.getExpoPushTokenAsync(
     projectId ? { projectId } : undefined,

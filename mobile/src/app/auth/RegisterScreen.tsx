@@ -49,7 +49,12 @@ export function RegisterScreen() {
           value={form.email}
           onChangeText={set('email')}
         />
-        <Field label="Telefone" keyboardType="phone-pad" value={form.phone} onChangeText={set('phone')} />
+        <Field
+          label="Telefone"
+          keyboardType="phone-pad"
+          value={form.phone}
+          onChangeText={set('phone')}
+        />
         <Field label="Senha" secureTextEntry value={form.password} onChangeText={set('password')} />
 
         <Muted>Quero usar o app como</Muted>
@@ -80,7 +85,12 @@ export function RegisterScreen() {
         )}
 
         <ErrorText>{error}</ErrorText>
-        <Button title="Criar conta" onPress={submit} loading={loading} disabled={roles.length === 0} />
+        <Button
+          title="Criar conta"
+          onPress={submit}
+          loading={loading}
+          disabled={roles.length === 0}
+        />
       </View>
     </Screen>
   );

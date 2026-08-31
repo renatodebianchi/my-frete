@@ -66,7 +66,11 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={isPrimary ? '#fff' : '#0F766E'} />
       ) : (
-        <Text className={isPrimary ? 'text-base font-semibold text-white' : 'text-base font-semibold text-brand'}>
+        <Text
+          className={
+            isPrimary ? 'text-base font-semibold text-white' : 'text-base font-semibold text-brand'
+          }
+        >
           {title}
         </Text>
       )}

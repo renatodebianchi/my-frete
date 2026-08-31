@@ -30,16 +30,11 @@ jobs:
         run: |
           dotnet tool restore
           dotnet ef migrations has-pending-model-changes -p src/MyFrete.Migrations -s src/MyFrete.Api || true
-      - name: Generate OpenAPI document (/v1)
-        run: |
-          dotnet tool restore
-          dotnet swagger tofile --output openapi.generated.json \
-            src/MyFrete.Api/bin/Release/net9.0/MyFrete.Api.dll v1
-      - name: Publish OpenAPI artifact
+      - name: Publish the /v1 API contract
         uses: actions/upload-artifact@v4
         with:
           name: openapi-v1
-          path: api/openapi.generated.json
+          path: specs/001-mini-freight-requests/contracts/openapi.yaml
 
   mobile:
     name: Mobile (Expo)
@@ -78,7 +73,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Vulnerability scan (Trivy) — blocking on HIGH/CRITICAL
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: my-frete/api:ci
           format: table
@@ -124,6 +119,7 @@ jobs:
       - name: Secret scan (gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
       - name: Vulnerable NuGet packages
         working-directory: api

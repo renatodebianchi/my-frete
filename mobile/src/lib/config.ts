@@ -7,5 +7,6 @@ type AppConfig = {
 const extra = (Constants.expoConfig?.extra ?? {}) as Partial<AppConfig>;
 
 export const config: AppConfig = {
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? extra.apiBaseUrl ?? 'http://localhost:8080/v1',
+  apiBaseUrl:
+    process.env.EXPO_PUBLIC_API_BASE_URL ?? extra.apiBaseUrl ?? 'http://localhost:8080/v1',
 };

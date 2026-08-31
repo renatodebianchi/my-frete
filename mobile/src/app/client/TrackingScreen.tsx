@@ -43,7 +43,8 @@ export function TrackingScreen({ navigation, route }: ClientStackScreenProps<'Tr
   const trip = trips?.items.find((t) => t.requestId === requestId);
 
   const canCancel =
-    data && ['searching', 'scheduled_searching', 'awaiting_schedule_decision'].includes(data.status);
+    data &&
+    ['searching', 'scheduled_searching', 'awaiting_schedule_decision'].includes(data.status);
 
   return (
     <Screen>
@@ -58,7 +59,9 @@ export function TrackingScreen({ navigation, route }: ClientStackScreenProps<'Tr
 
         {data?.status === 'awaiting_schedule_decision' && (
           <View className="mt-6">
-            <Text className="mb-2 font-medium text-neutral-900">Deseja agendar para outro dia?</Text>
+            <Text className="mb-2 font-medium text-neutral-900">
+              Deseja agendar para outro dia?
+            </Text>
             <View className="gap-2">
               {[2, 3, 7].map((d) => (
                 <Button
@@ -88,7 +91,10 @@ export function TrackingScreen({ navigation, route }: ClientStackScreenProps<'Tr
         )}
         {trip && (
           <View className="mt-6">
-            <Button title="Ver transporte" onPress={() => navigation.navigate('Trip', { tripId: trip.id })} />
+            <Button
+              title="Ver transporte"
+              onPress={() => navigation.navigate('Trip', { tripId: trip.id })}
+            />
           </View>
         )}
       </View>

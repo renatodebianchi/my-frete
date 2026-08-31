@@ -10,7 +10,11 @@ import type { SharedStackScreenProps } from '../navigation';
 export function HistoryScreen({ navigation }: SharedStackScreenProps<'History'>) {
   const isClient = useAuthStore((s) => s.user?.roles ?? []).includes('client');
 
-  const requests = useQuery({ queryKey: ['requests'], queryFn: () => freightApi.listRequests(), enabled: isClient });
+  const requests = useQuery({
+    queryKey: ['requests'],
+    queryFn: () => freightApi.listRequests(),
+    enabled: isClient,
+  });
   const trips = useQuery({ queryKey: ['trips'], queryFn: () => freightApi.listTrips() });
 
   return (

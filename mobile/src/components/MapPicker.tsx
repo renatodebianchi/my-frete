@@ -25,7 +25,10 @@ export function MapPicker({
           style={{ flex: 1 }}
           initialRegion={region}
           onPress={(e: MapPressEvent) =>
-            onChange({ lat: e.nativeEvent.coordinate.latitude, lng: e.nativeEvent.coordinate.longitude })
+            onChange({
+              lat: e.nativeEvent.coordinate.latitude,
+              lng: e.nativeEvent.coordinate.longitude,
+            })
           }
         >
           {value && <Marker coordinate={{ latitude: value.lat, longitude: value.lng }} />}

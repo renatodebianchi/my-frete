@@ -16,7 +16,11 @@ export function ClientHomeScreen({ navigation }: ClientStackScreenProps<'ClientH
         <Muted>Peça um mini-frete perto de você.</Muted>
         <View className="mt-8 gap-3">
           <Button title="Nova requisição" onPress={() => navigation.navigate('NewRequest')} />
-          <Button title="Histórico" variant="ghost" onPress={() => navigation.navigate('History')} />
+          <Button
+            title="Histórico"
+            variant="ghost"
+            onPress={() => navigation.navigate('History')}
+          />
         </View>
       </View>
       <Button title="Sair" variant="ghost" onPress={() => void logout()} />

@@ -23,7 +23,13 @@ export type TransportRequest = {
     | 'unfulfilled'
     | 'cancelled';
   kind: 'immediate' | 'scheduled';
-  estimate: { amount: number; currency: string; distanceKm: number; distanceSource: string; isEstimate: boolean };
+  estimate: {
+    amount: number;
+    currency: string;
+    distanceKm: number;
+    distanceSource: string;
+    isEstimate: boolean;
+  };
   items: { description: string; quantity: number }[];
   originAddress: string;
   destinationAddress: string;
@@ -85,7 +91,8 @@ export const freightApi = {
 
   getRequest: (id: string) => apiFetch<TransportRequest>(`/requests/${id}`),
   listRequests: () => apiFetch<{ items: TransportRequest[] }>('/requests'),
-  cancelRequest: (id: string) => apiFetch<TransportRequest>(`/requests/${id}/cancel`, { method: 'POST' }),
+  cancelRequest: (id: string) =>
+    apiFetch<TransportRequest>(`/requests/${id}/cancel`, { method: 'POST' }),
 
   offersInbox: () => apiFetch<OfferInbox[]>('/offers/inbox'),
   acceptOffer: (id: string) =>
@@ -100,17 +107,27 @@ export const freightApi = {
 
   getAvailability: () => apiFetch<string[]>('/professionals/me/schedule-availability'),
   setAvailability: (dates: string[]) =>
-    apiFetch<void>('/professionals/me/schedule-availability', { method: 'PUT', body: JSON.stringify(dates) }),
+    apiFetch<void>('/professionals/me/schedule-availability', {
+      method: 'PUT',
+      body: JSON.stringify(dates),
+    }),
 
   scheduleOffersInbox: () =>
-    apiFetch<{ id: string; requestId: string; scheduledDate: string; weightKg: number }[]>('/schedule-offers/inbox'),
+    apiFetch<{ id: string; requestId: string; scheduledDate: string; weightKg: number }[]>(
+      '/schedule-offers/inbox',
+    ),
   acceptScheduleOffer: (id: string) =>
-    apiFetch<{ tripId: string; requestId: string }>(`/schedule-offers/${id}/accept`, { method: 'POST' }),
+    apiFetch<{ tripId: string; requestId: string }>(`/schedule-offers/${id}/accept`, {
+      method: 'POST',
+    }),
 
   getTrip: (id: string) => apiFetch<Trip>(`/trips/${id}`),
   listTrips: () => apiFetch<{ items: Trip[] }>('/trips'),
   setAgreedAmount: (id: string, amount: number) =>
-    apiFetch<Trip>(`/trips/${id}/agreed-amount`, { method: 'PATCH', body: JSON.stringify({ amount }) }),
+    apiFetch<Trip>(`/trips/${id}/agreed-amount`, {
+      method: 'PATCH',
+      body: JSON.stringify({ amount }),
+    }),
   deliverTrip: (id: string) => apiFetch<Trip>(`/trips/${id}/deliver`, { method: 'POST' }),
   clientRespond: (id: string, response: 'confirm' | 'dispute', note?: string) =>
     apiFetch<Trip>(`/trips/${id}/client-response`, {

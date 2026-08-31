@@ -43,7 +43,12 @@ export function ProHomeScreen({ navigation }: ProStackScreenProps<'ProHome'>) {
     setAvailable(next);
     try {
       if (next && !(await startLocationUpdates())) {
-        throw new ApiError(0, 'location.denied', 'Permita o acesso à localização para ficar disponível.', null);
+        throw new ApiError(
+          0,
+          'location.denied',
+          'Permita o acesso à localização para ficar disponível.',
+          null,
+        );
       }
       const updated = await professionalApi.update({ immediateAvailability: next });
       useAuthStore.setState((s) =>
@@ -74,9 +79,21 @@ export function ProHomeScreen({ navigation }: ProStackScreenProps<'ProHome'>) {
         <ErrorText>{error}</ErrorText>
 
         <View className="mt-4 gap-3">
-          <Button title="Ofertas" variant="ghost" onPress={() => navigation.navigate('IncomingOffer')} />
-          <Button title="Minha agenda" variant="ghost" onPress={() => navigation.navigate('Schedule')} />
-          <Button title="Meus transportes" variant="ghost" onPress={() => navigation.navigate('History')} />
+          <Button
+            title="Ofertas"
+            variant="ghost"
+            onPress={() => navigation.navigate('IncomingOffer')}
+          />
+          <Button
+            title="Minha agenda"
+            variant="ghost"
+            onPress={() => navigation.navigate('Schedule')}
+          />
+          <Button
+            title="Meus transportes"
+            variant="ghost"
+            onPress={() => navigation.navigate('History')}
+          />
         </View>
       </View>
       <Button title="Sair" variant="ghost" onPress={() => void logout()} />

@@ -1,5 +1,8 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  type NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
@@ -30,7 +33,10 @@ export type AppStackParamList = {
   History: undefined;
 };
 
-export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStackScreenProps<AppStackParamList, T>;
+export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStackScreenProps<
+  AppStackParamList,
+  T
+>;
 export type ClientStackScreenProps<T extends keyof AppStackParamList> = AppStackScreenProps<T>;
 export type ProStackScreenProps<T extends keyof AppStackParamList> = AppStackScreenProps<T>;
 export type SharedStackScreenProps<T extends keyof AppStackParamList> = AppStackScreenProps<T>;
@@ -70,7 +76,9 @@ function AppNavigator() {
           both && (route.name === 'ClientHome' || route.name === 'ProHome')
             ? () => (
                 <Pressable
-                  onPress={() => navigation.navigate(route.name === 'ClientHome' ? 'ProHome' : 'ClientHome')}
+                  onPress={() =>
+                    navigation.navigate(route.name === 'ClientHome' ? 'ProHome' : 'ClientHome')
+                  }
                 >
                   <Text className="text-brand">
                     {route.name === 'ClientHome' ? 'Modo profissional' : 'Modo cliente'}
@@ -80,11 +88,31 @@ function AppNavigator() {
             : undefined,
       })}
     >
-      <AppStack.Screen name="ClientHome" component={ClientHomeScreen} options={{ title: 'Início' }} />
-      <AppStack.Screen name="ProHome" component={ProHomeScreen} options={{ title: 'Profissional' }} />
-      <AppStack.Screen name="NewRequest" component={NewRequestScreen} options={{ title: 'Nova requisição' }} />
-      <AppStack.Screen name="Tracking" component={TrackingScreen} options={{ title: 'Acompanhamento' }} />
-      <AppStack.Screen name="IncomingOffer" component={IncomingOfferScreen} options={{ title: 'Oferta' }} />
+      <AppStack.Screen
+        name="ClientHome"
+        component={ClientHomeScreen}
+        options={{ title: 'Início' }}
+      />
+      <AppStack.Screen
+        name="ProHome"
+        component={ProHomeScreen}
+        options={{ title: 'Profissional' }}
+      />
+      <AppStack.Screen
+        name="NewRequest"
+        component={NewRequestScreen}
+        options={{ title: 'Nova requisição' }}
+      />
+      <AppStack.Screen
+        name="Tracking"
+        component={TrackingScreen}
+        options={{ title: 'Acompanhamento' }}
+      />
+      <AppStack.Screen
+        name="IncomingOffer"
+        component={IncomingOfferScreen}
+        options={{ title: 'Oferta' }}
+      />
       <AppStack.Screen name="Schedule" component={ScheduleScreen} options={{ title: 'Agenda' }} />
       <AppStack.Screen name="Trip" component={TripScreen} options={{ title: 'Transporte' }} />
       <AppStack.Screen name="History" component={HistoryScreen} options={{ title: 'Histórico' }} />
@@ -102,7 +130,13 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {status === 'loading' ? <Splash /> : status === 'signedIn' ? <AppNavigator /> : <AuthNavigator />}
+      {status === 'loading' ? (
+        <Splash />
+      ) : status === 'signedIn' ? (
+        <AppNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
     </NavigationContainer>
   );
 }

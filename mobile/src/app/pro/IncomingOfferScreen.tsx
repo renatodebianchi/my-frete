@@ -82,7 +82,9 @@ export function IncomingOfferScreen({ navigation }: ProStackScreenProps<'Incomin
           {offer.summary.originAddress} → {offer.summary.destinationAddress}
         </Muted>
         <View className="mt-6 rounded-lg bg-neutral-100 p-4">
-          <Muted>Distância {offer.summary.distanceKm} km · {offer.summary.estimatedWeightKg} kg</Muted>
+          <Muted>
+            Distância {offer.summary.distanceKm} km · {offer.summary.estimatedWeightKg} kg
+          </Muted>
           <Muted>Valor estimado: BRL {offer.summary.estimatedAmount.toFixed(2)}</Muted>
         </View>
         <View className="mt-6 items-center">

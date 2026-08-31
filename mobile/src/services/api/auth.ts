@@ -38,7 +38,11 @@ export type RegisterInput = {
 
 export const authApi = {
   register: (input: RegisterInput) =>
-    apiFetch<AuthTokens>('/auth/register', { method: 'POST', body: JSON.stringify(input), auth: false }),
+    apiFetch<AuthTokens>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(input),
+      auth: false,
+    }),
 
   login: (email: string, password: string) =>
     apiFetch<AuthTokens>('/auth/login', {
