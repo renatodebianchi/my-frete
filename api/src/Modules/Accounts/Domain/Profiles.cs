@@ -1,3 +1,5 @@
+using NetTopologySuite.Geometries;
+
 namespace MyFrete.Modules.Accounts.Domain;
 
 public sealed class ClientProfile
@@ -25,11 +27,21 @@ public sealed class ProfessionalProfile
 
     public bool ImmediateAvailability { get; set; }
 
+    /// <summary>WGS84 point (SRID 4326). Set only while available for immediate offers (FR-012a).</summary>
+    public Point? LastLocation { get; set; }
+
+    public DateTimeOffset? LastLocationAt { get; set; }
+
     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.NaoVerificado;
 
     public DateTimeOffset CreatedAt { get; init; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    public bool CanCarry(int weightGrams) => MaxLoadGrams >= weightGrams;
+
+    public bool HasFreshLocation(DateTimeOffset now, TimeSpan ttl) =>
+        LastLocation is not null && LastLocationAt is { } at && now - at <= ttl;
 
     public static ProfessionalProfile Create(Guid userId, decimal maxLoadKg, DateTimeOffset now) => new()
     {

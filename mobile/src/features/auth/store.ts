@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { authApi, type Me, type RegisterInput } from '@/services/api/auth';
 import { configureApiClient } from '@/services/api/client';
 import { registerPushToken, unregisterPush } from '@/services/push';
+import { stopLocationUpdates } from '@/services/location';
 
 import { tokenStore, type StoredTokens } from './tokenStore';
 
@@ -52,6 +53,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
+    stopLocationUpdates();
     await unregisterPush();
     await tokenStore.clear();
     set({ status: 'signedOut', user: null, tokens: null });

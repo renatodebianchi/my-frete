@@ -48,7 +48,9 @@ internal sealed class ProfessionalProfileConfig : IEntityTypeConfiguration<Profe
         b.ToTable("professional_profile", "accounts");
         b.HasKey(x => x.UserId);
         b.Property(x => x.VerificationStatus).HasConversion<string>().HasMaxLength(30);
-        b.HasIndex(x => x.ImmediateAvailability);
+        b.Property(x => x.LastLocation).HasColumnType("geography (point, 4326)");
+        b.HasIndex(x => x.LastLocation).HasMethod("gist");
+        b.HasIndex(x => x.ImmediateAvailability).HasFilter("immediate_availability");
     }
 }
 

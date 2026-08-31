@@ -7,7 +7,11 @@ using MyFrete.Modules.Accounts.Domain;
 
 namespace MyFrete.Modules.Accounts.Features;
 
-public sealed record ProfessionalDto(decimal MaxLoadKg, bool ImmediateAvailability, string VerificationStatus);
+public sealed record ProfessionalDto(
+    decimal MaxLoadKg,
+    bool ImmediateAvailability,
+    string VerificationStatus,
+    DateTimeOffset? LastLocationAt);
 
 public sealed record MeDto(
     Guid Id,
@@ -44,7 +48,8 @@ public sealed class GetMeHandler(DbContext db, ICurrentActor actor) : IRequestHa
                 pro = new ProfessionalDto(
                     Math.Round(p.MaxLoadGrams / 1000m, 3),
                     p.ImmediateAvailability,
-                    p.VerificationStatus.ToString());
+                    p.VerificationStatus.ToString(),
+                    p.LastLocationAt);
             }
         }
 

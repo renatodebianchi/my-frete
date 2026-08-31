@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using MyFrete.BuildingBlocks.Results;
 using MyFrete.Modules.Accounts.Auth;
 using MyFrete.Modules.Accounts.Domain;
 using MyFrete.Modules.Accounts.Features;
+using MyFrete.Modules.Accounts.Professionals;
 
 namespace MyFrete.Modules.Accounts;
 
@@ -54,6 +56,11 @@ public static class AccountsModule
             .AddPolicy("client", p => p.RequireRole(Roles.Client))
             .AddPolicy("professional", p => p.RequireRole(Roles.Professional));
 
+        services.TryAddScoped<IActiveTripGuard, NoActiveTripGuard>();
+        services.TryAddScoped<IProfessionalDirectory, ProfessionalDirectory>();
+        services.TryAddScoped<IVerificationProvider, NoOpVerificationProvider>();
+        services.AddScoped<VerificationService>();
+
         return services;
     }
 
@@ -85,6 +92,18 @@ public static class AccountsModule
             var result = await sender.Send(new GetMeQuery());
             return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblemResult();
         }).RequireAuthorization();
+
+        v1.MapPatch("/professionals/me", async (UpdateProfessionalBody body, ISender sender) =>
+        {
+            var result = await sender.Send(new UpdateProfessionalCommand(body.MaxLoadKg, body.ImmediateAvailability));
+            return result.IsSuccess ? Results.Ok(result.Value) : result.Error.ToProblemResult();
+        }).RequireAuthorization("professional");
+
+        v1.MapPatch("/professionals/me/location", async (UpdateLocationBody body, ISender sender) =>
+        {
+            var result = await sender.Send(new UpdateLocationCommand(body.Lat, body.Lng));
+            return result.IsSuccess ? Results.NoContent() : result.Error.ToProblemResult();
+        }).RequireAuthorization("professional");
 
         v1.MapPost("/privacy/data-subject-requests", async (DataSubjectRequestBody body, ISender sender) =>
         {
@@ -148,3 +167,7 @@ public sealed record LoginRequest(string Email, string Password);
 public sealed record RefreshRequest(string RefreshToken);
 
 public sealed record DataSubjectRequestBody(string Kind, string? Details);
+
+public sealed record UpdateProfessionalBody(decimal? MaxLoadKg, bool? ImmediateAvailability);
+
+public sealed record UpdateLocationBody(double Lat, double Lng);

@@ -140,21 +140,33 @@ elegível a requisições compatíveis.
 **Independent Test**: Concluir o cadastro informando carga máxima e verificar que o profissional
 entra entre os elegíveis para requisições cujo peso ≤ capacidade.
 
+**Status (2026-08-31)**: ✅ **US3 COMPLETA** — T033–T042. **26 testes verdes** (3 contrato +
+5 unit + 18 integração). `ProfessionalProfile` ganhou `last_location` (geography 4326, índice
+GiST) + `last_location_at`; migração `ProfessionalLocation`. `PATCH /v1/professionals/me`
+(carga + disponibilidade, guarda de transporte ativo via `IActiveTripGuard` no-op — US1 troca);
+`PATCH /v1/professionals/me/location` (Point PostGIS, só enquanto disponível, throttle 20s
+configurável). `IProfessionalDirectory.GetEligibleForImmediateAsync` (disponível + capacidade ≥
+peso + sem transporte ativo). `IVerificationProvider` no-op + `VerificationService` (emite
+`professional.verification_changed.v1` + `VerificationEvent` + audit). Mobile: `ProHome` com
+toggle de disponibilidade → PATCH + publisher de localização (`expo-location` `watchPositionAsync`,
+throttle 60s). Verificado e2e via `docker compose up`: location→409 antes de disponível,
+PATCH me→200, location→204, `POINT(-46.63 -23.55)` gravado como geography.
+
 ### Tests for User Story 3
 
-- [ ] T033 [P] [US3] Teste de contrato de `/auth/register` (profissional com `maxLoadKg`) e `PATCH /professionals/me` em `api/tests/contract/Accounts/ProfessionalRegistrationTests.cs`
-- [ ] T034 [P] [US3] Teste de integração: profissional fica elegível quando `peso ≤ carga máxima` e inelegível caso contrário em `api/tests/integration/Accounts/EligibilityBasicsTests.cs`
-- [ ] T035 [P] [US3] Teste de integração: não é possível ficar `immediateAvailability=true` com transporte ativo (FR-004 → 409) em `api/tests/integration/Accounts/AvailabilityGuardTests.cs`
+- [X] T033 [P] [US3] Teste de contrato de `/auth/register` (profissional com `maxLoadKg`) e `PATCH /professionals/me` em `api/tests/contract/Accounts/ProfessionalRegistrationTests.cs`
+- [X] T034 [P] [US3] Teste de integração: profissional fica elegível quando `peso ≤ carga máxima` e inelegível caso contrário em `api/tests/integration/Accounts/EligibilityBasicsTests.cs`
+- [X] T035 [P] [US3] Teste de integração: não é possível ficar `immediateAvailability=true` com transporte ativo (FR-004 → 409) em `api/tests/integration/Accounts/AvailabilityGuardTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T036 [P] [US3] Entidade `ProfessionalProfile` (`max_load_grams`, `immediate_availability`, `last_location` geography, `last_location_at`, `verification_status`) + migração em `api/src/Modules/Accounts/Domain/`
-- [ ] T037 [P] [US3] Entidade `VerificationEvent` (append-only) + `IVerificationProvider` no-op + emissão do evento `professional.verification_changed.v1` em `api/src/Modules/Accounts/Verification/`
-- [ ] T038 [US3] Handler de cadastro de profissional (cria `User` role `professional` + `ProfessionalProfile` com `verification_status = nao_verificado`) em `api/src/Modules/Accounts/Features/RegisterProfessional/`
-- [ ] T039 [US3] `PATCH /professionals/me` (atualiza `maxLoadKg` e `immediateAvailability` com guarda de transporte ativo) em `api/src/Modules/Accounts/Features/UpdateProfessional/`
-- [ ] T040 [US3] `PATCH /professionals/me/location` (grava `Point` PostGIS + `last_location_at`, só enquanto disponível) em `api/src/Modules/Accounts/Features/UpdateLocation/`
-- [ ] T041 [P] [US3] Mobile: cadastro de profissional (capacidade), toggle de disponibilidade em `mobile/src/app/pro/`
-- [ ] T042 [P] [US3] Mobile: permissão de localização + publisher de localização com throttle ~60 s em `mobile/src/services/location.ts`
+- [X] T036 [P] [US3] Entidade `ProfessionalProfile` (`max_load_grams`, `immediate_availability`, `last_location` geography, `last_location_at`, `verification_status`) + migração em `api/src/Modules/Accounts/Domain/`
+- [X] T037 [P] [US3] Entidade `VerificationEvent` (append-only) + `IVerificationProvider` no-op + emissão do evento `professional.verification_changed.v1` em `api/src/Modules/Accounts/Verification/`
+- [X] T038 [US3] Handler de cadastro de profissional (cria `User` role `professional` + `ProfessionalProfile` com `verification_status = nao_verificado`) em `api/src/Modules/Accounts/Features/RegisterProfessional/`
+- [X] T039 [US3] `PATCH /professionals/me` (atualiza `maxLoadKg` e `immediateAvailability` com guarda de transporte ativo) em `api/src/Modules/Accounts/Features/UpdateProfessional/`
+- [X] T040 [US3] `PATCH /professionals/me/location` (grava `Point` PostGIS + `last_location_at`, só enquanto disponível) em `api/src/Modules/Accounts/Features/UpdateLocation/`
+- [X] T041 [P] [US3] Mobile: cadastro de profissional (capacidade), toggle de disponibilidade em `mobile/src/app/pro/`
+- [X] T042 [P] [US3] Mobile: permissão de localização + publisher de localização com throttle ~60 s em `mobile/src/services/location.ts`
 
 **Checkpoint**: Profissionais cadastrados, disponíveis e localizáveis; base de elegibilidade pronta.
 

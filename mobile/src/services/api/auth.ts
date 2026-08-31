@@ -16,7 +16,15 @@ export type Me = {
     maxLoadKg: number;
     immediateAvailability: boolean;
     verificationStatus: string;
+    lastLocationAt: string | null;
   };
+};
+
+export type ProfessionalMe = {
+  maxLoadKg: number;
+  immediateAvailability: boolean;
+  verificationStatus: string;
+  lastLocationAt: string | null;
 };
 
 export type RegisterInput = {
@@ -40,4 +48,15 @@ export const authApi = {
     }),
 
   me: () => apiFetch<Me>('/accounts/me'),
+};
+
+export const professionalApi = {
+  update: (patch: { maxLoadKg?: number; immediateAvailability?: boolean }) =>
+    apiFetch<ProfessionalMe>('/professionals/me', { method: 'PATCH', body: JSON.stringify(patch) }),
+
+  updateLocation: (lat: number, lng: number) =>
+    apiFetch<void>('/professionals/me/location', {
+      method: 'PATCH',
+      body: JSON.stringify({ lat, lng }),
+    }),
 };
