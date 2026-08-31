@@ -1,0 +1,20 @@
+# Extend the default gitleaks rules; allowlist the intentionally-committed dev/example values.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local dev defaults and test fixtures — no real credentials"
+paths = [
+  '''.*\.env\.example$''',
+  '''deploy/docker-compose(\.override)?\.yml$''',
+  '''deploy/otel-collector-config\.yaml$''',
+  '''deploy/infra/.*''',
+  '''api/src/MyFrete\.Api/appsettings\.json$''',
+  '''api/tests/.*''',
+  '''specs/.*''',
+]
+regexes = [
+  '''dev-only-change-me-[0-9a-f]+''',
+  '''integration-tests-signing-key-[0-9a-f]+''',
+  '''(POSTGRES_PASSWORD|Password)=?:?\s*myfrete''',
+]

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/MyFrete.BuildingBlocks/MyFrete.BuildingBlocks.csproj" />
+    <ProjectReference Include="../../src/Modules/Accounts/MyFrete.Modules.Accounts.csproj" />
+    <ProjectReference Include="../../src/Modules/Pricing/MyFrete.Modules.Pricing.csproj" />
+    <ProjectReference Include="../../src/Modules/Requests/MyFrete.Modules.Requests.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+</Project>

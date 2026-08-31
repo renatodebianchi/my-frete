@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../MyFrete.BuildingBlocks/MyFrete.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Modules/Accounts/MyFrete.Modules.Accounts.csproj" />
+    <ProjectReference Include="../Modules/Pricing/MyFrete.Modules.Pricing.csproj" />
+    <ProjectReference Include="../Modules/Requests/MyFrete.Modules.Requests.csproj" />
+    <ProjectReference Include="../Modules/Matching/MyFrete.Modules.Matching.csproj" />
+    <ProjectReference Include="../Modules/Scheduling/MyFrete.Modules.Scheduling.csproj" />
+    <ProjectReference Include="../Modules/Trips/MyFrete.Modules.Trips.csproj" />
+    <ProjectReference Include="../Modules/Notifications/MyFrete.Modules.Notifications.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" />
+    <PackageReference Include="EFCore.NamingConventions" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../MyFrete.BuildingBlocks/MyFrete.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Accounts/MyFrete.Modules.Accounts.csproj" />
+    <ProjectReference Include="../Requests/MyFrete.Modules.Requests.csproj" />
+    <ProjectReference Include="../Trips/MyFrete.Modules.Trips.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+</Project>
