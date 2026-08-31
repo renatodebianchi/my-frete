@@ -151,7 +151,7 @@ public sealed class OfferOrchestrator(
     {
         session.State = SessionState.Exhausted;
         session.CurrentOfferId = null;
-        outbox.Enqueue(new MatchingExhausted(session.RequestId, reason));
+        outbox.Enqueue(new MatchingExhausted(session.RequestId, session.ClientId, reason));
         await requests.MarkExhaustedAsync(session.RequestId, ct);
     }
 }

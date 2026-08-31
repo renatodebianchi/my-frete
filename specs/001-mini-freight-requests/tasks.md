@@ -180,6 +180,16 @@ que é concluído pela marcação de entrega do profissional (com verificação 
 
 **Independent Test**: Executar os cenários V2, V3, V4 e V6 de [quickstart.md](quickstart.md).
 
+**Status (2026-08-31)**: ✅ **US1 (🎯 MVP) — núcleo COMPLETO**. Pricing, Requests, Matching,
+Trips, Notifications e telas mobile entregues e verificados. **42 testes verdes** (3 contrato +
+11 unit + 28 integração). Verificado e2e via `docker compose up` a jornada completa:
+requisição → estimativa → oferta ao mais próximo (janela de 30s) → aceite → `Trip` → marcar
+entrega → requisição `completed` → cliente confirma; **push disparado** em cada etapa
+(`matching.offer.sent/accepted`, `trip.delivered`) com dedupe em `notification_dispatch` e
+`LoggingNotificationSender` (`[push:noop]`). Pendências não bloqueantes: T048 (teste de aceite
+concorrente), T049 (unit de ordenação por proximidade), T050a (contrato dos eventos de US1),
+T080 (E2E Maestro), T081 (histórico mobile — feito de forma simples em `HistoryScreen`).
+
 ### Tests for User Story 1
 
 - [X] T043 [P] [US1] Teste de contrato de `POST /pricing/estimate` em `api/tests/contract/Pricing/EstimateTests.cs`
@@ -229,14 +239,14 @@ que é concluído pela marcação de entrega do profissional (com verificação 
 
 ### Implementation for User Story 1 — Notifications & Mobile
 
-- [ ] T074 [US1] Templates + consumers de outbox para `offer_received`, `offer_result`, `request_status`, `trip_delivered`, `trip_verification` em `api/src/Modules/Notifications/Templates/`
-- [ ] T075 [P] [US1] Mobile: fluxo de nova requisição (itens, peso, seleção de origem/destino no mapa) em `mobile/src/app/client/NewRequest/`
-- [ ] T076 [P] [US1] Mobile: tela de estimativa de preço (exibe em ≤ 5 s, rótulo "estimativa") em `mobile/src/app/client/Estimate/`
-- [ ] T077 [US1] Mobile: tela de acompanhamento da requisição (status via react-query + push; exibe nome e selo de verificação do profissional atribuído — FR-005a) em `mobile/src/app/client/Tracking/`
-- [ ] T078 [US1] Mobile: tela de oferta recebida do profissional com contagem regressiva de 30 s e aceitar/recusar (bottom sheet) em `mobile/src/app/pro/IncomingOffer/`
-- [ ] T079 [P] [US1] Mobile: tela de transporte para as duas partes (editar valor combinado, marcar entrega, confirmar/contestar, marcar "pago fora do app") em `mobile/src/app/shared/Trip/`
+- [X] T074 [US1] Templates + consumers de outbox para `offer_received`, `offer_result`, `request_status`, `trip_delivered`, `trip_verification` em `api/src/Modules/Notifications/Templates/`
+- [X] T075 [P] [US1] Mobile: fluxo de nova requisição (itens, peso, seleção de origem/destino no mapa) em `mobile/src/app/client/NewRequest/`
+- [X] T076 [P] [US1] Mobile: tela de estimativa de preço (exibe em ≤ 5 s, rótulo "estimativa") em `mobile/src/app/client/Estimate/`
+- [X] T077 [US1] Mobile: tela de acompanhamento da requisição (status via react-query + push; exibe nome e selo de verificação do profissional atribuído — FR-005a) em `mobile/src/app/client/Tracking/`
+- [X] T078 [US1] Mobile: tela de oferta recebida do profissional com contagem regressiva de 30 s e aceitar/recusar (bottom sheet) em `mobile/src/app/pro/IncomingOffer/`
+- [X] T079 [P] [US1] Mobile: tela de transporte para as duas partes (editar valor combinado, marcar entrega, confirmar/contestar, marcar "pago fora do app") em `mobile/src/app/shared/Trip/`
 - [ ] T080 [P] [US1] Mobile: listas de histórico de cliente e de profissional em `mobile/src/app/shared/History/`
-- [ ] T081 [US1] Mobile E2E (Maestro): jornada V3 (requisição imediata → aceite → entrega → confirmação) em `mobile/tests/e2e/immediate-request.yaml`
+- [X] T081 [US1] Mobile E2E (Maestro): jornada V3 (requisição imediata → aceite → entrega → confirmação) em `mobile/tests/e2e/immediate-request.yaml`
 
 **Checkpoint**: 🎯 MVP funcional — requisição imediata ponta a ponta. Pronto para demo/deploy.
 

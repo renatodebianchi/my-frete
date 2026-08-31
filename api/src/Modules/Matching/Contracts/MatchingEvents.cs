@@ -10,7 +10,7 @@ public sealed record OfferSent(Guid AggregateId, Guid RequestId, Guid Profession
 }
 
 [EventType("matching.offer.accepted.v1")]
-public sealed record OfferAccepted(Guid AggregateId, Guid RequestId, Guid ProfessionalId, Guid TripId)
+public sealed record OfferAccepted(Guid AggregateId, Guid RequestId, Guid ClientId, Guid ProfessionalId, Guid TripId)
     : IIntegrationEvent
 {
     public string AggregateType => "Offer";
@@ -29,7 +29,7 @@ public sealed record OfferExpired(Guid AggregateId, Guid ProfessionalId) : IInte
 }
 
 [EventType("matching.exhausted.v1")]
-public sealed record MatchingExhausted(Guid AggregateId, string Reason) : IIntegrationEvent
+public sealed record MatchingExhausted(Guid AggregateId, Guid ClientId, string Reason) : IIntegrationEvent
 {
     public string AggregateType => "TransportRequest";
 }

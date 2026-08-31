@@ -121,7 +121,7 @@ public sealed class AcceptOfferHandler(
             session.CurrentOfferId = null;
         }
 
-        outbox.Enqueue(new OfferAccepted(offer.Id, offer.RequestId, professionalId, tripId));
+        outbox.Enqueue(new OfferAccepted(offer.Id, offer.RequestId, request.ClientId, professionalId, tripId));
         await audit.WriteAsync("request.assigned", "TransportRequest", offer.RequestId,
             new { professionalId, offerId = offer.Id }, ct: ct);
 

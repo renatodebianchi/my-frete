@@ -5,7 +5,9 @@ import { Button, Heading, Muted, Screen } from '@/components/ui';
 
 import type { AuthStackParamList } from '../navigation';
 
-export function WelcomeScreen({ navigation }: NativeStackScreenProps<AuthStackParamList, 'Welcome'>) {
+type Props = NativeStackScreenProps<AuthStackParamList, 'Welcome'>;
+
+export function WelcomeScreen({ navigation }: Props) {
   return (
     <Screen>
       <View className="flex-1 justify-center">
